@@ -2,6 +2,51 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (request.method === "POST" && url.pathname === "/api/player") {
+      try {
+        const body = await request.json();
+
+        const name = String(body.name || "").trim();
+        const age = Number(body.age);
+
+        if (!name || !age || age < 18 || age > 100) {
+          return Response.json(
+            { error: "Enter a valid name and age (18-100)." },
+            { status: 400 }
+          );
+        }
+
+        const id = crypto.randomUUID();
+
+        await env.Db.prepare(`
+          INSERT INTO players
+          (id, name, age, balance, health, energy, happiness, reputation)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `)
+          .bind(id, name, age, 2000, 100, 100, 70, 0)
+          .run();
+
+        return Response.json({
+          success: true,
+          player: {
+            id,
+            name,
+            age,
+            balance: 2000,
+            health: 100,
+            energy: 100,
+            happiness: 70,
+            reputation: 0
+          }
+        });
+      } catch (error) {
+        return Response.json(
+          { error: error.message },
+          { status: 500 }
+        );
+      }
+    }
+
     if (url.pathname === "/api/health") {
       return Response.json({
         success: true,
@@ -10,167 +55,142 @@ export default {
       });
     }
 
-    return new Response(
-      `<!DOCTYPE html>
-<html lang="en">
+    return new Response(`
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>City Life</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      background:
-        radial-gradient(circle at top, #26365f 0%, #101522 45%, #070a10 100%);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 900px;
-      text-align: center;
-    }
-
-    .logo {
-      font-size: 48px;
-      font-weight: 800;
-      letter-spacing: -2px;
-      margin-bottom: 10px;
-    }
-
-    .tagline {
-      font-size: 20px;
-      color: #b8c2d9;
-      margin-bottom: 40px;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 24px;
-      padding: 40px 24px;
-      backdrop-filter: blur(14px);
-    }
-
-    .card h1 {
-      margin-top: 0;
-      font-size: 32px;
-    }
-
-    .card p {
-      color: #c5ccda;
-      line-height: 1.7;
-    }
-
-    .start {
-      margin-top: 25px;
-      padding: 15px 28px;
-      border: 0;
-      border-radius: 12px;
-      background: #ffffff;
-      color: #111827;
-      font-size: 17px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 30px;
-    }
-
-    .stat {
-      background: rgba(255,255,255,0.06);
-      padding: 18px 10px;
-      border-radius: 14px;
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 20px;
-      margin-bottom: 5px;
-    }
-
-    .stat span {
-      color: #9da8bd;
-      font-size: 13px;
-    }
-
-    @media (max-width: 600px) {
-      .logo {
-        font-size: 38px;
-      }
-
-      .stats {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-  </style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>City Life</title>
+<style>
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#090d16;
+color:white;
+display:flex;
+justify-content:center;
+padding:30px 15px
+}
+main{width:100%;max-width:500px}
+h1{text-align:center;font-size:42px;margin-bottom:5px}
+.tag{text-align:center;color:#9da8bd;margin-bottom:30px}
+.card{
+background:#151c2b;
+padding:25px;
+border-radius:20px
+}
+input,button{
+width:100%;
+padding:15px;
+margin-top:12px;
+box-sizing:border-box;
+border-radius:10px;
+font-size:16px
+}
+input{
+background:#0d1320;
+border:1px solid #303b52;
+color:white
+}
+button{
+border:0;
+font-weight:bold;
+cursor:pointer
+}
+.start{background:white;color:#111}
+.stats{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:20px
+}
+.stat{
+background:#202a3d;
+padding:15px;
+border-radius:10px
+}
+.small{color:#9da8bd;font-size:13px}
+#result{margin-top:20px}
+</style>
 </head>
-
 <body>
-  <main class="container">
-    <div class="logo">CITY LIFE</div>
+<main>
+<h1>🏙️ CITY LIFE</h1>
+<div class="tag">Build a life. Build an empire.</div>
 
-    <div class="tagline">
-      Build a life. Build an empire.
-    </div>
+<div class="card">
+<h2>Create Your Character</h2>
 
-    <section class="card">
-      <h1>Your story starts here.</h1>
+<input id="name" placeholder="Character name">
+<input id="age" type="number" min="18" max="100" placeholder="Age">
 
-      <p>
-        Create your character, choose your home, build a career,
-        earn money, own possessions, start businesses and influence
-        the future of your city.
-      </p>
+<button class="start" onclick="createPlayer()">
+START YOUR LIFE
+</button>
 
-      <button class="start" onclick="alert('Character creation is coming next.')">
-        Start Your Life
-      </button>
+<div id="result"></div>
+</div>
+
+<script>
+async function createPlayer(){
+  const name=document.getElementById("name").value;
+  const age=document.getElementById("age").value;
+  const result=document.getElementById("result");
+
+  result.innerHTML="Creating your life...";
+
+  try{
+    const response=await fetch("/api/player",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name,age})
+    });
+
+    const data=await response.json();
+
+    if(!response.ok){
+      result.innerHTML="<p>"+data.error+"</p>";
+      return;
+    }
+
+    const p=data.player;
+
+    result.innerHTML=`
+      <h2>Welcome, ${p.name}! 🎉</h2>
+      <p>Your new life has begun.</p>
 
       <div class="stats">
         <div class="stat">
-          <strong>$2,000</strong>
-          <span>Starting Cash</span>
+          💰 $${p.balance}
+          <div class="small">Cash</div>
         </div>
-
         <div class="stat">
-          <strong>100</strong>
-          <span>Health</span>
+          ❤️ ${p.health}
+          <div class="small">Health</div>
         </div>
-
         <div class="stat">
-          <strong>100</strong>
-          <span>Energy</span>
+          ⚡ ${p.energy}
+          <div class="small">Energy</div>
         </div>
-
         <div class="stat">
-          <strong>70</strong>
-          <span>Happiness</span>
+          😊 ${p.happiness}
+          <div class="small">Happiness</div>
         </div>
       </div>
-    </section>
-  </main>
+    `;
+  }catch(error){
+    result.innerHTML="<p>Unable to create player.</p>";
+  }
+}
+</script>
+
+</main>
 </body>
-</html>`,
-      {
-        headers: {
-          "Content-Type": "text/html; charset=UTF-8"
-        }
+</html>
+    `, {
+      headers: {
+        "Content-Type": "text/html;charset=UTF-8"
       }
-    );
+    });
   }
 };
