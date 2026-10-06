@@ -659,9 +659,13 @@ async function createPlayer(){
     result.innerHTML =
       "<h2>Welcome, "+player.name+"! 🎉</h2>" +
       "<p>Your new life has begun.</p>" +
-      renderStats();
+      renderStats() +
 
-    await showHomes();
+      "<div class='card' style='margin-top:16px'>" +
+      "<h3>🏠 Choose Your First Home</h3>" +
+      "<p>Your character is ready. Now choose where your new life begins.</p>" +
+      "<button class='start' onclick='showHomes()'>CHOOSE YOUR HOME</button>" +
+      "</div>";
 
   }catch(error){
 
