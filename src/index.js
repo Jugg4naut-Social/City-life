@@ -666,7 +666,11 @@ async function createPlayer(){
   }catch(error){
 
     result.innerHTML=
-      '<div class="error">Unable to create player.</div>';
+      '<div class="error">Unable to create player: '+
+      error.message+
+      '</div>';
+
+    console.error("createPlayer error:", error);
 
   }
 }
