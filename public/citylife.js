@@ -273,6 +273,7 @@ async function chooseHome(homeId){
         <button class="primary" onclick="showJobs()">FIND A JOB</button>
       </section>`;
 
+    showCity(data.home?.district || "Residential");
     await showJobs();
 
   }catch(error){
