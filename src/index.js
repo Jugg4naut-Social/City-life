@@ -592,7 +592,7 @@ Create your character and begin with $2,000.
 
 <input id="name" placeholder="Character name">
 
-<button class="start" onclick="createPlayer()">
+<button class="start" id="startLifeButton">
 START YOUR LIFE
 </button>
 </div>
