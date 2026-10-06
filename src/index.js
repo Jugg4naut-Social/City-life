@@ -160,6 +160,191 @@ export default {
       }
     }
 
+
+    if (request.method === "GET" && url.pathname == "/api/jobs") {
+      try {
+        const jobs = await env.Db.prepare(`
+          SELECT id, title, category, salary, energy_cost, skill_required
+          FROM jobs
+          ORDER BY salary ASC
+        `).all();
+
+        return Response.json({
+          success: true,
+          jobs: jobs.results
+        });
+      } catch (error) {
+        return Response.json(
+          { error: error.message },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (request.method === "POST" && url.pathname == "/api/job") {
+      try {
+        const body = await request.json();
+        const playerId = String(body.player_id || "").trim();
+        const jobId = String(body.job_id || "").trim();
+
+        if (!playerId || !jobId) {
+          return Response.json(
+            { error: "Player and job are required." },
+            { status: 400 }
+          );
+        }
+
+        const player = await env.Db.prepare(`
+          SELECT id, energy, balance
+          FROM players
+          WHERE id = ?
+        `).bind(playerId).first();
+
+        if (!player) {
+          return Response.json(
+            { error: "Player not found." },
+            { status: 404 }
+          );
+        }
+
+        const job = await env.Db.prepare(`
+          SELECT id, title, category, salary, energy_cost, skill_required
+          FROM jobs
+          WHERE id = ?
+        `).bind(jobId).first();
+
+        if (!job) {
+          return Response.json(
+            { error: "Job not found." },
+            { status: 404 }
+          );
+        }
+
+        const existing = await env.Db.prepare(`
+          SELECT id
+          FROM player_jobs
+          WHERE player_id = ? AND active = 1
+        `).bind(playerId).first();
+
+        if (existing) {
+          return Response.json(
+            { error: "You already have an active job." },
+            { status: 400 }
+          );
+        }
+
+        if (player.energy < job.energy_cost) {
+          return Response.json(
+            { error: "You do not have enough energy for this job." },
+            { status: 400 }
+          );
+        }
+
+        const jobIdForPlayer = crypto.randomUUID();
+
+        await env.Db.prepare(`
+          INSERT INTO player_jobs
+          (id, player_id, job_id, started_at, active)
+          VALUES (?, ?, ?, ?, 1)
+        `).bind(
+          jobIdForPlayer,
+          playerId,
+          job.id,
+          new Date().toISOString()
+        ).run();
+
+        return Response.json({
+          success: true,
+          message: "You got the job!",
+          job: job
+        });
+      } catch (error) {
+        return Response.json(
+          { error: error.message },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (request.method === "POST" && url.pathname == "/api/work") {
+      try {
+        const body = await request.json();
+        const playerId = String(body.player_id || "").trim();
+
+        if (!playerId) {
+          return Response.json(
+            { error: "Player is required." },
+            { status: 400 }
+          );
+        }
+
+        const player = await env.Db.prepare(`
+          SELECT id, balance, energy
+          FROM players
+          WHERE id = ?
+        `).bind(playerId).first();
+
+        if (!player) {
+          return Response.json(
+            { error: "Player not found." },
+            { status: 404 }
+          );
+        }
+
+        const job = await env.Db.prepare(`
+          SELECT
+            j.id,
+            j.title,
+            j.salary,
+            j.energy_cost
+          FROM player_jobs pj
+          JOIN jobs j ON j.id = pj.job_id
+          WHERE pj.player_id = ? AND pj.active = 1
+        `).bind(playerId).first();
+
+        if (!job) {
+          return Response.json(
+            { error: "You need a job before you can work." },
+            { status: 400 }
+          );
+        }
+
+        if (player.energy < job.energy_cost) {
+          return Response.json(
+            { error: "You are too tired to work. Rest and try again." },
+            { status: 400 }
+          );
+        }
+
+        const newBalance = player.balance + job.salary;
+        const newEnergy = player.energy - job.energy_cost;
+
+        await env.Db.prepare(`
+          UPDATE players
+          SET balance = ?, energy = ?
+          WHERE id = ?
+        `).bind(
+          newBalance,
+          newEnergy,
+          playerId
+        ).run();
+
+        return Response.json({
+          success: true,
+          message: "Work completed! You earned $" + job.salary + ".",
+          job: job.title,
+          earned: job.salary,
+          balance: newBalance,
+          energy: newEnergy
+        });
+      } catch (error) {
+        return Response.json(
+          { error: error.message },
+          { status: 500 }
+        );
+      }
+    }
+
     if (url.pathname === "/api/health") {
       return Response.json({
         success: true,
