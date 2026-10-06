@@ -46,6 +46,120 @@ export default {
       }
     }
 
+    if (request.method === "GET" && url.pathname === "/api/homes") {
+      try {
+        const homes = await env.Db.prepare(`
+          SELECT id, name, district, monthly_rent, purchase_price, comfort, available
+          FROM homes
+          WHERE available = 1
+          ORDER BY purchase_price ASC
+        `).all();
+
+        return Response.json({
+          success: true,
+          homes: homes.results
+        });
+      } catch (error) {
+        return Response.json(
+          { error: error.message },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/home") {
+      try {
+        const body = await request.json();
+        const playerId = String(body.player_id || "").trim();
+        const homeId = String(body.home_id || "").trim();
+
+        if (!playerId || !homeId) {
+          return Response.json(
+            { error: "Player and home are required." },
+            { status: 400 }
+          );
+        }
+
+        const player = await env.Db.prepare(`
+          SELECT id, balance
+          FROM players
+          WHERE id = ?
+        `).bind(playerId).first();
+
+        if (!player) {
+          return Response.json(
+            { error: "Player not found." },
+            { status: 404 }
+          );
+        }
+
+        const home = await env.Db.prepare(`
+          SELECT id, name, district, monthly_rent, purchase_price, comfort, available
+          FROM homes
+          WHERE id = ? AND available = 1
+        `).bind(homeId).first();
+
+        if (!home) {
+          return Response.json(
+            { error: "Home is not available." },
+            { status: 404 }
+          );
+        }
+
+        if (player.balance < home.purchase_price) {
+          return Response.json(
+            { error: "You cannot afford this home yet." },
+            { status: 400 }
+          );
+        }
+
+        const existing = await env.Db.prepare(`
+          SELECT id
+          FROM player_homes
+          WHERE player_id = ?
+        `).bind(playerId).first();
+
+        if (existing) {
+          return Response.json(
+            { error: "You already have a home." },
+            { status: 400 }
+          );
+        }
+
+        const ownershipId = crypto.randomUUID();
+
+        await env.Db.prepare(`
+          INSERT INTO player_homes
+          (id, player_id, home_id, rent_due, move_in_date)
+          VALUES (?, ?, ?, ?, ?)
+        `).bind(
+          ownershipId,
+          playerId,
+          home.id,
+          home.monthly_rent,
+          new Date().toISOString()
+        ).run();
+
+        await env.Db.prepare(`
+          UPDATE players
+          SET balance = balance - ?
+          WHERE id = ?
+        `).bind(home.purchase_price, playerId).run();
+
+        return Response.json({
+          success: true,
+          message: "Welcome to your new home!",
+          home: home,
+          balance: player.balance - home.purchase_price
+        });
+      } catch (error) {
+        return Response.json(
+          { error: error.message },
+          { status: 500 }
+        );
+      }
+    }
+
     if (url.pathname === "/api/health") {
       return Response.json({
         success: true,
@@ -128,9 +242,79 @@ START YOUR LIFE
 </button>
 
 <div id="result"></div>
+<div id="homes"></div>
 </div>
 
 <script>
+
+async function showHomes(playerId){
+  const homes=document.getElementById("homes");
+  homes.innerHTML="<p>Finding available homes...</p>";
+
+  try{
+    const response=await fetch("/api/homes");
+    const data=await response.json();
+
+    if(!response.ok){
+      homes.innerHTML="<p>"+data.error+"</p>";
+      return;
+    }
+
+    if(!data.homes.length){
+      homes.innerHTML="<p>No homes are available right now.</p>";
+      return;
+    }
+
+    homes.innerHTML =
+      "<h2>🏠 Choose Your Home</h2>" +
+      "<p class='small'>This is your first major decision. Choose wisely.</p>" +
+      data.homes.map(h =>
+        "<div class='stat' style='margin-top:12px'>" +
+        "<h3>"+h.name+"</h3>" +
+        "<p>📍 "+h.district+"</p>" +
+        "<p>💰 Buy: $"+h.purchase_price+"</p>" +
+        "<p>🏷️ Rent: $"+h.monthly_rent+"/month</p>" +
+        "<p>✨ Comfort: "+h.comfort+"</p>" +
+        "<button class='start' onclick='chooseHome(""+playerId+"",""+h.id+"")'>MOVE IN</button>" +
+        "</div>"
+      ).join("");
+  }catch(error){
+    homes.innerHTML="<p>Unable to load homes.</p>";
+  }
+}
+
+async function chooseHome(playerId, homeId){
+  const homes=document.getElementById("homes");
+  homes.innerHTML="<p>Moving you into your new home...</p>";
+
+  try{
+    const response=await fetch("/api/home",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        player_id:playerId,
+        home_id:homeId
+      })
+    });
+
+    const data=await response.json();
+
+    if(!response.ok){
+      homes.innerHTML="<p>"+data.error+"</p>";
+      return;
+    }
+
+    homes.innerHTML =
+      "<h2>🏠 You're Home!</h2>" +
+      "<p>Welcome to <strong>"+data.home.name+"</strong>.</p>" +
+      "<p>📍 "+data.home.district+"</p>" +
+      "<p>💰 Remaining cash: $"+data.balance+"</p>" +
+      "<button class='start' onclick='alert("Jobs are coming next!")'>LOOK FOR A JOB</button>";
+  }catch(error){
+    homes.innerHTML="<p>Unable to complete your move.</p>";
+  }
+}
+
 async function createPlayer(){
   const name=document.getElementById("name").value;
   const age=document.getElementById("age").value;
