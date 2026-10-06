@@ -310,6 +310,19 @@ function skillForJob(job){
 }
 
 
+
+function enterCityWorld(){
+  const city = $("city");
+  if(city){
+    showCity(window.currentDistrict || "Residential");
+    city.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+}
+
+function returnToCity(){
+  enterCityWorld();
+}
+
 function showCity(district = "Residential"){
   const city = $("city");
   if(!city) return;
@@ -348,6 +361,7 @@ function showCity(district = "Residential"){
   ];
 
   const selected = districts.find(d => d.name === district) || districts[0];
+  window.currentDistrict = selected.name;
 
   city.innerHTML = `
     <section class="city-world card">
