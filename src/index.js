@@ -579,6 +579,10 @@ margin-top:15px
 <body>
 <main>
 
+<div id="runtimeStatus" style="background:#3a1820;color:white;padding:10px;border-radius:8px;margin-bottom:15px;font-size:13px">
+JavaScript starting...
+</div>
+
 <h1>🏙️ CITY LIFE</h1>
 <div class="tag">Build a life. Build an empire.</div>
 
@@ -606,6 +610,18 @@ START YOUR LIFE
 <script>
 
 let player = null;
+
+window.addEventListener("error", function(event){
+  const box = document.getElementById("runtimeStatus");
+  if (box) {
+    box.textContent = "JavaScript error: " + event.message;
+  }
+});
+
+const runtimeBox = document.getElementById("runtimeStatus");
+if (runtimeBox) {
+  runtimeBox.textContent = "JavaScript loaded successfully.";
+}
 
 document.addEventListener("DOMContentLoaded", function(){
 
