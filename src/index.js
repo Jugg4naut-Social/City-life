@@ -106,9 +106,9 @@ export default {
           );
         }
 
-        if (player.balance < home.purchase_price) {
+        if (player.balance < home.monthly_rent) {
           return Response.json(
-            { error: "You cannot afford this home yet." },
+            { error: "You cannot afford the first month\x27s rent yet." },
             { status: 400 }
           );
         }
@@ -144,11 +144,11 @@ export default {
           UPDATE players
           SET balance = balance - ?
           WHERE id = ?
-        `).bind(home.purchase_price, playerId).run();
+        `).bind(home.monthly_rent, playerId).run();
 
         return Response.json({
           success: true,
-          message: "Welcome to your new home!",
+          message: "Welcome to your new rented home!",
           home: home,
           balance: player.balance - home.purchase_price
         });
@@ -275,7 +275,7 @@ async function showHomes(playerId){
         "<p>💰 Buy: $"+h.purchase_price+"</p>" +
         "<p>🏷️ Rent: $"+h.monthly_rent+"/month</p>" +
         "<p>✨ Comfort: "+h.comfort+"</p>" +
-        "<button class='start' onclick='chooseHome(""+playerId+"",""+h.id+"")'>MOVE IN</button>" +
+        "<button class='start' onclick='chooseHome(""+playerId+"",""+h.id+"")'>RENT & MOVE IN</button>" +
         "</div>"
       ).join("");
   }catch(error){
