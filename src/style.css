@@ -742,3 +742,361 @@ footer{
   .city-hint{font-size:7px}
   .world-title{flex-direction:column}
 }
+
+/* CITY LIFE - INTERACTIVE CITY MAP */
+.city-world-map{
+  overflow:hidden;
+}
+
+.city-map{
+  position:relative;
+  width:100%;
+  min-height:520px;
+  margin:18px 0;
+  overflow:hidden;
+  border-radius:22px;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px),
+    linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+    #17202a;
+  background-size:38px 38px;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:inset 0 0 80px rgba(0,0,0,.35);
+}
+
+.map-water{
+  position:absolute;
+  right:0;
+  top:0;
+  width:14%;
+  height:100%;
+  background:linear-gradient(180deg,#245b72,#163e52);
+  border-left:6px solid #777;
+}
+
+.map-road{
+  position:absolute;
+  background:#343b42;
+  box-shadow:inset 0 2px rgba(255,255,255,.08),inset 0 -2px rgba(0,0,0,.25);
+}
+
+.road-a{
+  left:0;
+  top:23%;
+  width:100%;
+  height:48px;
+}
+
+.road-b{
+  left:0;
+  top:61%;
+  width:100%;
+  height:42px;
+}
+
+.road-c{
+  left:0;
+  top:82%;
+  width:100%;
+  height:38px;
+}
+
+.road-d{
+  left:21%;
+  top:0;
+  width:44px;
+  height:100%;
+}
+
+.road-e{
+  left:69%;
+  top:0;
+  width:44px;
+  height:100%;
+}
+
+.map-avenue{
+  position:absolute;
+  background:#444b53;
+  z-index:2;
+}
+
+.avenue-a{
+  left:38%;
+  top:0;
+  width:28px;
+  height:100%;
+}
+
+.avenue-b{
+  left:52%;
+  top:0;
+  width:28px;
+  height:100%;
+}
+
+.avenue-c{
+  left:0;
+  top:43%;
+  width:86%;
+  height:24px;
+}
+
+.map-park{
+  position:absolute;
+  z-index:3;
+  left:3%;
+  top:7%;
+  width:15%;
+  height:13%;
+  min-height:65px;
+  border-radius:18px;
+  background:#285d3b;
+  border:2px solid #4b8b59;
+  color:#d8f2dc;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.08em;
+  box-shadow:0 8px 20px rgba(0,0,0,.2);
+}
+
+.map-park i{
+  position:absolute;
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#79a86e;
+}
+
+.map-park i:nth-child(2){left:18%;top:25%}
+.map-park i:nth-child(3){right:20%;top:22%}
+.map-park i:nth-child(4){left:28%;bottom:18%}
+.map-park i:nth-child(5){right:25%;bottom:20%}
+
+.map-station{
+  position:absolute;
+  z-index:6;
+  left:73%;
+  top:44%;
+  width:14%;
+  height:12%;
+  min-height:52px;
+  border-radius:12px;
+  background:#20252b;
+  border:2px solid #e0b44c;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#f4d477;
+  font-size:11px;
+  font-weight:900;
+  box-shadow:0 7px 18px rgba(0,0,0,.3);
+}
+
+.map-player{
+  position:absolute;
+  z-index:15;
+  left:46%;
+  top:70%;
+}
+
+.player-marker{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:#f5f5f5;
+  color:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:900;
+  border:4px solid #111;
+  box-shadow:0 0 0 5px rgba(255,255,255,.18),0 8px 20px rgba(0,0,0,.4);
+}
+
+.city-buildings{
+  position:absolute;
+  inset:0;
+  z-index:8;
+}
+
+.city-building{
+  position:absolute;
+  width:17%;
+  min-height:62px;
+  padding:8px;
+  border:0;
+  border-radius:10px;
+  color:#fff;
+  background:#29323b;
+  box-shadow:0 8px 16px rgba(0,0,0,.35);
+  cursor:pointer;
+  transform:translate(-50%,-50%);
+  transition:transform .18s,filter .18s;
+}
+
+.city-building:hover,
+.city-building:active{
+  transform:translate(-50%,-50%) scale(1.07);
+  filter:brightness(1.25);
+}
+
+.city-building b{
+  position:relative;
+  z-index:2;
+  display:block;
+  font-size:10px;
+  line-height:1.15;
+  margin-top:5px;
+}
+
+.building-shape{
+  display:block;
+  width:100%;
+  height:25px;
+  border-radius:4px 4px 2px 2px;
+  background:#697582;
+  box-shadow:
+    inset 5px 0 rgba(255,255,255,.12),
+    inset -5px 0 rgba(0,0,0,.18);
+}
+
+.building-shape:after{
+  content:"";
+  display:block;
+  width:60%;
+  height:5px;
+  margin:5px auto 0;
+  background:rgba(255,230,150,.7);
+  border-radius:2px;
+  box-shadow:0 8px rgba(255,230,150,.45);
+}
+
+.building-home{background:#304b39}
+.building-home .building-shape{background:#78906f}
+
+.building-apartments{background:#3b4555}
+.building-apartments .building-shape{height:34px;background:#7c8797}
+
+.building-office,
+.building-tech{background:#263b52}
+.building-office .building-shape,
+.building-tech .building-shape{height:42px;background:#5d7894}
+
+.building-shop{background:#58452d}
+.building-shop .building-shape{background:#a47c48}
+
+.building-hotel{background:#4b344d}
+.building-hotel .building-shape{height:38px;background:#856083}
+
+.building-entertainment{background:#503052}
+.building-entertainment .building-shape{background:#9a5b9c}
+
+.building-factory{background:#454545}
+.building-factory .building-shape{height:30px;background:#777}
+
+.building-transport{background:#35434a}
+.building-transport .building-shape{background:#657d85}
+
+.map-label{
+  position:absolute;
+  z-index:4;
+  color:rgba(255,255,255,.45);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.16em;
+  pointer-events:none;
+}
+
+.label-north{left:42%;top:4%}
+.label-central{left:39%;top:47%}
+.label-south{left:42%;bottom:4%}
+
+.city-controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:10px 0;
+}
+
+.city-controls button{
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:10px;
+  padding:9px 11px;
+  background:#202832;
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.city-controls button:hover{
+  filter:brightness(1.2);
+}
+
+.city-location-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:16px;
+  margin-top:12px;
+  border-radius:16px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.city-location-card h3{
+  margin:3px 0 5px;
+}
+
+.city-location-card button{
+  flex-shrink:0;
+  border:0;
+  border-radius:10px;
+  padding:10px 13px;
+  background:#fff;
+  color:#111;
+  font-weight:800;
+}
+
+@media(max-width:600px){
+  .city-map{
+    min-height:460px;
+    border-radius:16px;
+  }
+
+  .city-building{
+    width:22%;
+    min-height:55px;
+    padding:6px;
+  }
+
+  .city-building b{
+    font-size:8px;
+  }
+
+  .map-park{
+    width:20%;
+    left:2%;
+  }
+
+  .map-station{
+    width:19%;
+    right:1%;
+  }
+
+  .city-location-card{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .city-location-card button{
+    width:100%;
+  }
+}
+
