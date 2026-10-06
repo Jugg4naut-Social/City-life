@@ -1,0 +1,97 @@
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#090d16;
+color:white;
+padding:25px 15px
+}
+main{
+width:100%;
+max-width:600px;
+margin:auto
+}
+h1{
+text-align:center;
+font-size:42px;
+margin:10px 0 5px
+}
+.tag{
+text-align:center;
+color:#9da8bd;
+margin-bottom:25px
+}
+.card{
+background:#151c2b;
+padding:22px;
+border-radius:20px;
+margin-bottom:15px
+}
+input,button{
+width:100%;
+padding:15px;
+margin-top:12px;
+box-sizing:border-box;
+border-radius:10px;
+font-size:16px
+}
+input{
+background:#0d1320;
+border:1px solid #303b52;
+color:white
+}
+button{
+border:0;
+font-weight:bold;
+cursor:pointer
+}
+.start{
+background:white;
+color:#111
+}
+.secondary{
+background:#26334a;
+color:white
+}
+.stats{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:20px
+}
+.stat{
+background:#202a3d;
+padding:15px;
+border-radius:10px
+}
+.small{
+color:#9da8bd;
+font-size:13px
+}
+.job{
+background:#202a3d;
+padding:17px;
+border-radius:14px;
+margin-top:12px
+}
+.job h3{
+margin:0 0 8px
+}
+.job p{
+margin:6px 0;
+color:#c8d0df
+}
+.locked{
+opacity:.5
+}
+.success{
+background:#16351f;
+padding:14px;
+border-radius:10px;
+margin-top:15px
+}
+.error{
+background:#3a1820;
+padding:14px;
+border-radius:10px;
+margin-top:15px
+}
