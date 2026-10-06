@@ -1027,7 +1027,7 @@ START YOUR LIFE
 
 </div>
 
-<script src="/citylife.js"></script>
+<script src="/citylife.js?v=7fde133"></script>
 
 </main>
 </body>
