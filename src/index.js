@@ -11,7 +11,7 @@ export default {
 
         if (!name) {
           return Response.json(
-            { error: "Enter a valid name and age (18-100)." },
+            { error: "Enter a valid name." },
             { status: 400 }
           );
         }
@@ -142,7 +142,7 @@ async function createPlayer(){
     const response=await fetch("/api/player",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({name,age})
+      body:JSON.stringify({name})
     });
 
     const data=await response.json();
