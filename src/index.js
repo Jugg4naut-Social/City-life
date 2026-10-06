@@ -39,6 +39,14 @@ export default {
           }
         });
       } catch (error) {
+
+        if (String(error.message).includes("UNIQUE constraint failed: players.username")) {
+          return Response.json(
+            { error: "That character name is already taken. Please choose another." },
+            { status: 409 }
+          );
+        }
+
         return Response.json(
           { error: error.message },
           { status: 500 }
