@@ -182,7 +182,7 @@ result.innerHTML =
   '<div class="small">Happiness</div>' +
   "</div>" +
 
-  "</div>";`;  
+  "</div>";  
 }catch(error){
     result.innerHTML="<p>Unable to create player.</p>";
   }
