@@ -7,9 +7,9 @@ export default {
         const body = await request.json();
 
         const name = String(body.name || "").trim();
-        const age = Number(body.age);
+        
 
-        if (!name || !age || age < 18 || age > 100) {
+        if (!name) {
           return Response.json(
             { error: "Enter a valid name and age (18-100)." },
             { status: 400 }
@@ -20,7 +20,7 @@ export default {
 
         await env.Db.prepare(`
           INSERT INTO players
-          (id, name, age, balance, health, energy, happiness, reputation)
+          (id, username, display_name, balance, health, energy, happiness, reputation)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `)
           .bind(id, name, age, 2000, 100, 100, 70, 0)
@@ -31,7 +31,6 @@ export default {
           player: {
             id,
             name,
-            age,
             balance: 2000,
             health: 100,
             energy: 100,
