@@ -156,32 +156,33 @@ async function createPlayer(){
     const p=data.player;
 
 
-result.innerHTML=`
-  <h2>Welcome, \${p.name}! 🎉</h2>
-  <p>Your new life has begun.</p>
+result.innerHTML =
+  "<h2>Welcome, " + p.name + "! 🎉</h2>" +
+  "<p>Your new life has begun.</p>" +
 
-  <div class="stats">
-    <div class="stat">
-      💰 $\${p.balance}
-      <div class="small">Cash</div>
-    </div>
+  '<div class="stats">' +
 
-    <div class="stat">
-      ❤️ \${p.health}
-      <div class="small">Health</div>
-    </div>
+  '<div class="stat">' +
+  "💰 $" + p.balance +
+  '<div class="small">Cash</div>' +
+  "</div>" +
 
-    <div class="stat">
-      ⚡ \${p.energy}
-      <div class="small">Energy</div>
-    </div>
+  '<div class="stat">' +
+  "❤️ " + p.health +
+  '<div class="small">Health</div>' +
+  "</div>" +
 
-    <div class="stat">
-      😊 \${p.happiness}
-      <div class="small">Happiness</div>
-    </div>
-  </div>
-`;  }catch(error){
+  '<div class="stat">' +
+  "⚡ " + p.energy +
+  '<div class="small">Energy</div>' +
+  "</div>" +
+
+  '<div class="stat">' +
+  "😊 " + p.happiness +
+  '<div class="small">Happiness</div>' +
+  "</div>" +
+
+  "</div>";`;  }catch(error){
     result.innerHTML="<p>Unable to create player.</p>";
   }
 }
