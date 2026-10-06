@@ -864,3 +864,61 @@ async function workJob(){
       <section class="card">${renderStats()}</section>`;
   }
 }
+
+
+async function showJobs(){
+  const jobs = $("jobs");
+
+  jobs.innerHTML = `
+    <section class="card">
+      <div class="section-title">
+        <div class="section-icon">$</div>
+        <div><div class="eyebrow">CAREER MARKET</div><h2>Find Your Career</h2></div>
+      </div>
+      <p>Loading opportunities...</p>
+    </section>`;
+
+  try{
+    const data = await api("/api/jobs");
+
+    jobs.innerHTML = `
+      <section class="card">
+        <div class="section-title">
+          <div class="section-icon">$</div>
+          <div><div class="eyebrow">CAREER MARKET</div><h2>Choose Your Career</h2></div>
+        </div>
+        <p class="small">Work, gain experience and unlock higher-paying careers.</p>
+
+        <div class="grid">
+          ${data.jobs.map(j => {
+            const enoughEnergy = Number(player.energy) >= Number(j.energy_cost);
+            const unlocked = Number(j.skill_required) === 0;
+
+            return `
+              <div class="option ${unlocked ? "" : "locked"}">
+                <div class="option-visual">${jobVisual(j.category)}</div>
+                <div class="option-title">${esc(j.title)}</div>
+                <div class="option-meta">
+                  <span class="pill">${esc(j.category)}</span>
+                  <br>
+                  Pay: <strong>$${Number(j.salary).toLocaleString()}</strong>/shift<br>
+                  Energy: ${Number(j.energy_cost)}<br>
+                  Required skill: ${Number(j.skill_required)}
+                </div>
+
+                ${
+                  unlocked && enoughEnergy
+                  ? `<button class="primary" onclick="chooseJob('${esc(j.id)}')">TAKE THIS JOB</button>`
+                  : unlocked
+                  ? `<button class="secondary" disabled>TOO TIRED</button>`
+                  : `<button class="secondary" disabled>LOCKED</button>`
+                }
+              </div>`;
+          }).join("")}
+        </div>
+      </section>`;
+
+  }catch(error){
+    jobs.innerHTML = `<div class="error">${esc(error.message)}</div>`;
+  }
+}
