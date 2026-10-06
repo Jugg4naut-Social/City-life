@@ -942,6 +942,22 @@ async function workJob(){
 
       renderStats() +
 
+      "<div class='card' style='margin-top:16px'>" +
+
+      "<h3>🛠️ Skill Progress</h3>" +
+
+      "<p><strong>"+data.skill+"</strong></p>" +
+
+      "<p>⭐ XP: "+data.experience+" / 100</p>" +
+
+      "<p>📈 Level: "+data.level+"</p>" +
+
+      (data.level_up
+        ? "<div class='success'>🎉 Level Up! Your "+data.skill+" skill increased.</div>"
+        : "") +
+
+      "</div>" +
+
       (player.energy > 0
 
         ? "<button class='start' onclick='workJob()'>WORK AGAIN</button>"
