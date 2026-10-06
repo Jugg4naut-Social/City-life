@@ -240,6 +240,52 @@ export default {
           );
         }
 
+        const skillMap = {
+          Service: "Practical",
+          Retail: "Communication",
+          Security: "Practical",
+          Transport: "Practical",
+          Business: "Business",
+          Creative: "Creativity",
+          Technology: "Technology",
+          Legal: "Knowledge",
+          Healthcare: "Knowledge"
+        };
+
+        const primarySkill = skillMap[job.category] || "Practical";
+
+        let skill = await env.Db.prepare(`
+          SELECT level, experience
+          FROM player_skills
+          WHERE player_id = ? AND skill = ?
+        `).bind(playerId, primarySkill).first();
+
+        if (!skill) {
+          await env.Db.prepare(`
+            INSERT INTO player_skills
+            (id, player_id, skill, level, experience)
+            VALUES (?, ?, ?, 0, 0)
+          `).bind(
+            crypto.randomUUID(),
+            playerId,
+            primarySkill
+          ).run();
+
+          skill = { level: 0, experience: 0 };
+        }
+
+        if (skill.level < job.skill_required) {
+          return Response.json(
+            {
+              error: "Your " + primarySkill + " skill is too low for this job.",
+              skill: primarySkill,
+              current_level: skill.level,
+              required_level: job.skill_required
+            },
+            { status: 400 }
+          );
+        }
+
         const jobIdForPlayer = crypto.randomUUID();
 
         await env.Db.prepare(`
@@ -256,7 +302,9 @@ export default {
         return Response.json({
           success: true,
           message: "You got the job!",
-          job: job
+          job: job,
+          skill: primarySkill,
+          skill_level: skill.level
         });
       } catch (error) {
         return Response.json(
@@ -295,6 +343,7 @@ export default {
           SELECT
             j.id,
             j.title,
+            j.category,
             j.salary,
             j.energy_cost
           FROM player_jobs pj
@@ -316,6 +365,50 @@ export default {
           );
         }
 
+        const skillMap = {
+          Service: "Practical",
+          Retail: "Communication",
+          Security: "Practical",
+          Transport: "Practical",
+          Business: "Business",
+          Creative: "Creativity",
+          Technology: "Technology",
+          Legal: "Knowledge",
+          Healthcare: "Knowledge"
+        };
+
+        const primarySkill = skillMap[job.category] || "Practical";
+
+        let skill = await env.Db.prepare(`
+          SELECT id, level, experience
+          FROM player_skills
+          WHERE player_id = ? AND skill = ?
+        `).bind(playerId, primarySkill).first();
+
+        if (!skill) {
+          const skillId = crypto.randomUUID();
+
+          await env.Db.prepare(`
+            INSERT INTO player_skills
+            (id, player_id, skill, level, experience)
+            VALUES (?, ?, ?, 0, 0)
+          `).bind(
+            skillId,
+            playerId,
+            primarySkill
+          ).run();
+
+          skill = {
+            id: skillId,
+            level: 0,
+            experience: 0
+          };
+        }
+
+        const xpGained = 10;
+        const newExperience = skill.experience + xpGained;
+        const newLevel = Math.floor(newExperience / 100);
+
         const newBalance = player.balance + job.salary;
         const newEnergy = player.energy - job.energy_cost;
 
@@ -329,13 +422,29 @@ export default {
           playerId
         ).run();
 
+        await env.Db.prepare(`
+          UPDATE player_skills
+          SET level = ?, experience = ?
+          WHERE player_id = ? AND skill = ?
+        `).bind(
+          newLevel,
+          newExperience,
+          playerId,
+          primarySkill
+        ).run();
+
         return Response.json({
           success: true,
           message: "Work completed! You earned $" + job.salary + ".",
           job: job.title,
           earned: job.salary,
           balance: newBalance,
-          energy: newEnergy
+          energy: newEnergy,
+          skill: primarySkill,
+          xp_gained: xpGained,
+          experience: newExperience,
+          level: newLevel,
+          level_up: newLevel > skill.level
         });
       } catch (error) {
         return Response.json(
