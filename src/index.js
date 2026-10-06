@@ -607,6 +607,16 @@ START YOUR LIFE
 
 let player = null;
 
+document.addEventListener("DOMContentLoaded", function(){
+
+  const startButton = document.getElementById("startLifeButton");
+
+  if (startButton) {
+    startButton.addEventListener("click", createPlayer);
+  }
+
+});
+
 function renderStats(){
   if(!player) return;
 
