@@ -339,89 +339,139 @@ function showCity(district="Residential"){
 
   if(cityAnimation)cancelAnimationFrame(cityAnimation);
 
+  const places = {
+    Residential: [
+      ["home","Small Homes","homes",2,2],
+      ["home","Maple Apartments","apartments",5,2],
+      ["park","Central Park","park",8,2],
+      ["shop","Local Market","shop",11,2],
+      ["home","Riverside Homes","homes",14,2]
+    ],
+    Downtown: [
+      ["office","City Tower","office",3,2],
+      ["office","Financial Centre","office",6,2],
+      ["shop","City Mall","shop",9,2],
+      ["office","Grand Offices","office",12,2],
+      ["hotel","Grand Hotel","hotel",15,2]
+    ],
+    "Tech District": [
+      ["tech","Tech Campus","tech",3,2],
+      ["tech","Startup Hub","tech",6,2],
+      ["office","Innovation Tower","office",9,2],
+      ["shop","Tech Market","shop",12,2],
+      ["park","Tech Park","park",15,2]
+    ],
+    "Business District": [
+      ["office","Business Centre","office",3,2],
+      ["office","Commerce Tower","office",6,2],
+      ["bank","City Bank","office",9,2],
+      ["office","Executive Plaza","office",12,2],
+      ["hotel","Business Hotel","hotel",15,2]
+    ],
+    Entertainment: [
+      ["entertainment","Arena","entertainment",3,2],
+      ["shop","Shopping District","shop",6,2],
+      ["entertainment","Cinema","entertainment",9,2],
+      ["park","Festival Park","park",12,2],
+      ["hotel","Entertainment Hotel","hotel",15,2]
+    ],
+    Industrial: [
+      ["factory","Factory","factory",3,2],
+      ["warehouse","Warehouse","factory",6,2],
+      ["transport","Transport Depot","transport",9,2],
+      ["factory","Industrial Works","factory",12,2],
+      ["warehouse","Storage Centre","factory",15,2]
+    ]
+  };
+
+  const selected = places[district] || places.Residential;
+
   root.innerHTML=`
-    <section class="card city-world-3d">
+    <section class="card city-world-map">
       <div class="eyebrow">CITY WORLD</div>
+
       <div class="world-title">
         <div>
-          <h2>\${esc(district)}</h2>
-          <p class="small">Explore the city and discover what your surroundings can offer.</p>
+          <h2>${esc(district)}</h2>
+          <p class="small">Explore the living city and choose where to go next.</p>
         </div>
         <strong>LIVE CITY</strong>
       </div>
 
-      <div class="city3d-frame">
-        <canvas id="cityCanvas"></canvas>
-        <div class="city-controls">
-          <button id="cityZoomIn">+</button>
-          <button id="cityZoomOut">-</button>
-          <button id="cityReset">RESET</button>
+      <div class="city-map">
+        <div class="map-water"></div>
+
+        <div class="map-road road-a"></div>
+        <div class="map-road road-b"></div>
+        <div class="map-road road-c"></div>
+        <div class="map-road road-d"></div>
+        <div class="map-road road-e"></div>
+
+        <div class="map-avenue avenue-a"></div>
+        <div class="map-avenue avenue-b"></div>
+        <div class="map-avenue avenue-c"></div>
+
+        <div class="map-park park-one">
+          <span>GREEN PARK</span>
+          <i></i><i></i><i></i><i></i>
         </div>
-        <div class="city-hint">DRAG TO MOVE - SCROLL TO ZOOM - TAP BUILDINGS</div>
+
+        <div class="map-station">
+          <span>METRO</span>
+        </div>
+
+        <div class="map-player">
+          <div class="player-marker">YOU</div>
+        </div>
+
+        <div class="city-buildings">
+          ${selected.map((item,index)=>`
+            <button
+              class="city-building building-${item[0]}"
+              style="left:${item[3]*6.05}%;top:${item[4]*14 + index*9}%"
+              onclick="openCityLocation('${item[1]}','${district}')"
+            >
+              <span class="building-shape"></span>
+              <b>${item[1]}</b>
+            </button>
+          `).join("")}
+        </div>
+
+        <div class="map-label label-north">NORTH DISTRICT</div>
+        <div class="map-label label-central">CENTRAL AVENUE</div>
+        <div class="map-label label-south">SOUTH DISTRICT</div>
       </div>
 
-      <div class="district-tabs">
-        <button class="\${district==='Residential'?'active':''}" onclick="showCity('Residential')">Residential</button>
-        <button class="\${district==='Downtown'?'active':''}" onclick="showCity('Downtown')">Downtown</button>
-        <button class="\${district==='Tech District'?'active':''}" onclick="showCity('Tech District')">Tech</button>
-        <button class="\${district==='Business District'?'active':''}" onclick="showCity('Business District')">Business</button>
-        <button class="\${district==='Entertainment'?'active':''}" onclick="showCity('Entertainment')">Entertainment</button>
-        <button class="\${district==='Industrial'?'active':''}" onclick="showCity('Industrial')">Industrial</button>
+      <div class="city-controls">
+        <button onclick="showCity('Residential')">RESIDENTIAL</button>
+        <button onclick="showCity('Downtown')">DOWNTOWN</button>
+        <button onclick="showCity('Tech District')">TECH</button>
+        <button onclick="showCity('Business District')">BUSINESS</button>
+        <button onclick="showCity('Entertainment')">ENTERTAINMENT</button>
+        <button onclick="showCity('Industrial')">INDUSTRIAL</button>
       </div>
 
-      <div id="cityLocationPanel"></div>
+      <div id="cityLocationPanel">
+        <div class="small">Choose a location on the map.</div>
+      </div>
     </section>
   `;
-
-  loadThreeCity(district);
 }
 
-function loadThreeCity(district){
-  const status=$("cityLocationPanel");
+function openCityLocation(name,district){
+  const panel=$("cityLocationPanel");
+  if(!panel)return;
 
-  try{
-    if(window.THREE){
-      if(status) status.innerHTML='<div class="small">3D engine ready.</div>';
-      buildThreeCity(district);
-      return;
-    }
-
-    if(status) status.innerHTML='<div class="small">Loading 3D city engine...</div>';
-
-    const s=document.createElement("script");
-    s.src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js";
-
-    s.onload=()=>{
-      if(window.THREE){
-        if(status) status.innerHTML='<div class="small">3D engine loaded.</div>';
-        try{
-          buildThreeCity(district);
-        }catch(error){
-          if(status) status.innerHTML='<div class="city-load-error">3D build error: '+esc(error.message)+'</div>';
-          showCityFallback(district);
-        }
-      }else{
-        if(status) status.innerHTML='<div class="city-load-error">Three.js loaded but the 3D engine is unavailable.</div>';
-        showCityFallback(district);
-      }
-    };
-
-    s.onerror=()=>{
-      if(status) status.innerHTML='<div class="city-load-error">Could not load the 3D engine from the external library.</div>';
-      showCityFallback(district);
-    };
-
-    document.head.appendChild(s);
-
-  }catch(error){
-    if(status) status.innerHTML='<div class="city-load-error">3D startup error: '+esc(error.message)+'</div>';
-    showCityFallback(district);
-  }
-}
-
-function showCityFallback(district){
-  const c=$("cityCanvas");
-  if(c)c.outerHTML='<div class="city-load-error">City graphics could not load. Refresh to try again.</div>';
+  panel.innerHTML=`
+    <div class="city-location-card">
+      <div>
+        <div class="eyebrow">${esc(district)}</div>
+        <h3>${esc(name)}</h3>
+        <p class="small">This location is part of the living city. More activities will unlock as City Life expands.</p>
+      </div>
+      <button onclick="showCity('${district}')">BACK TO CITY</button>
+    </div>
+  `;
 }
 
 function buildThreeCity(district){
