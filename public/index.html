@@ -1,46 +1,78 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>City Life</title>
-
-<link rel="stylesheet" href="/style.css?v=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b14">
+<title>City Life  Build a life. Build an empire.</title>
+<link rel="stylesheet" href="/style.css?v=2">
 </head>
 
 <body>
+<div class="app-shell">
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">CL</div>
+    <div>
+      <div class="brand-name">CITY LIFE</div>
+      <div class="brand-tag">Build a life. Build an empire.</div>
+    </div>
+  </div>
+</header>
+
 <main>
 
-<div id="runtimeStatus" style="background:#3a1820;color:white;padding:10px;border-radius:8px;margin-bottom:15px;font-size:13px">
-JavaScript starting...
-</div>
+<div id="runtimeStatus" class="runtime">JavaScript starting...</div>
 
-<h1> CITY LIFE</h1>
-<div class="tag">Build a life. Build an empire.</div>
+<section id="result" class="hero card">
+  <div class="hero-copy">
+    <span class="eyebrow">YOUR STORY STARTS HERE</span>
+    <h1>Build a life.<br><span>Build an empire.</span></h1>
+    <p>Create your character, find a home, build your career and turn your first $2,000 into something much bigger.</p>
 
-<div class="card">
+    <div class="character-stage">
+      <div class="city-glow"></div>
+      <div class="character">
+        <div class="hair"></div>
+        <div class="head"></div>
+        <div class="face"></div>
+        <div class="body"></div>
+        <div class="arm arm-left"></div>
+        <div class="arm arm-right"></div>
+        <div class="leg leg-left"></div>
+        <div class="leg leg-right"></div>
+      </div>
+      <div class="ground"></div>
+      <div class="building b1"></div>
+      <div class="building b2"></div>
+      <div class="building b3"></div>
+      <div class="building b4"></div>
+    </div>
 
-<div id="result">
-<h2>Start Your Life</h2>
-<p class="small">
-Create your character and begin with $2,000.
-</p>
+    <div class="start-panel">
+      <h2>Start Your Life</h2>
+      <p class="small">Choose a character name and begin with <strong>$2,000</strong>.</p>
+      <input id="name" maxlength="40" autocomplete="off" placeholder="Enter your character name">
+      <button class="primary" id="startLifeButton">START YOUR LIFE</button>
+    </div>
+  </div>
+</section>
 
-<input id="name" placeholder="Character name">
-
-<button class="start" id="startLifeButton" onclick="createPlayer()">
-START YOUR LIFE
-</button>
-</div>
-
+<div id="dashboard"></div>
+<div id="city"></div>
 <div id="homes"></div>
 <div id="jobs"></div>
 <div id="work"></div>
 
+</main>
+
+<footer>
+  CITY LIFE &bull; Your choices shape your future.
+</footer>
+
 </div>
 
-
-
-</main>
-<script src="/citylife.js?v=1"></script>
+<script src="/citylife.js?v=2"></script>
 </body>
 </html>

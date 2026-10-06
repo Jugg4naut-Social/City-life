@@ -309,6 +309,151 @@ function skillForJob(job){
   return map[job.category] || "Practical";
 }
 
+
+function showCity(district = "Residential"){
+  const city = $("city");
+  if(!city) return;
+
+  const districts = [
+    {
+      name:"Residential",
+      description:"Apartments, homes and the beginning of your new life.",
+      locations:["Your Home","Apartment Buildings","Local Market"]
+    },
+    {
+      name:"Downtown",
+      description:"The commercial heart of the city.",
+      locations:["Shopping Center","Restaurants","Bank","Corporate Offices"]
+    },
+    {
+      name:"Tech District",
+      description:"Technology companies, startups and modern opportunities.",
+      locations:["Tech Company","Startup Hub","Electronics Store"]
+    },
+    {
+      name:"Business District",
+      description:"Corporate offices, finance and high-level careers.",
+      locations:["Business Center","Law Office","Financial Office"]
+    },
+    {
+      name:"Industrial",
+      description:"Factories, warehouses and logistics operations.",
+      locations:["Factory","Warehouse","Logistics Center"]
+    },
+    {
+      name:"Entertainment",
+      description:"Places to relax, socialize and spend your hard-earned money.",
+      locations:["Cinema","Arcade","Gym","Nightlife"]
+    }
+  ];
+
+  const selected = districts.find(d => d.name === district) || districts[0];
+
+  city.innerHTML = `
+    <section class="city-world card">
+      <div class="city-header">
+        <div>
+          <div class="eyebrow">CITY WORLD</div>
+          <h2>${esc(selected.name)}</h2>
+          <p class="small">${esc(selected.description)}</p>
+        </div>
+        <div class="city-location">CURRENT DISTRICT<br><strong>${esc(selected.name)}</strong></div>
+      </div>
+
+      <div class="city-map">
+        <div class="road road-a"></div>
+        <div class="road road-b"></div>
+        <div class="city-block block-a"></div>
+        <div class="city-block block-b"></div>
+        <div class="city-block block-c"></div>
+        <div class="city-block block-d"></div>
+        <div class="city-player"></div>
+        <span class="map-label label-res">RESIDENTIAL</span>
+        <span class="map-label label-down">DOWNTOWN</span>
+        <span class="map-label label-tech">TECH</span>
+        <span class="map-label label-biz">BUSINESS</span>
+      </div>
+
+      <div class="district-tabs">
+        ${districts.map(d => `
+          <button
+            class="district-tab ${d.name === selected.name ? "active" : ""}"
+            onclick="showCity('${esc(d.name)}')">
+            ${esc(d.name)}
+          </button>
+        `).join("")}
+      </div>
+
+      <div class="location-grid">
+        ${selected.locations.map((location, index) => `
+          <button class="location-card" onclick="selectLocation('${esc(location)}','${esc(selected.name)}')">
+            <span class="location-number">0${index + 1}</span>
+            <strong>${esc(location)}</strong>
+            <span>EXPLORE LOCATION</span>
+          </button>
+        `).join("")}
+      </div>
+
+      <div id="locationPanel"></div>
+    </section>
+  `;
+}
+
+function selectLocation(location, district){
+  const panel = $("locationPanel");
+  if(!panel) return;
+
+  const actions = {
+    "Your Home":["REST","VIEW HOME"],
+    "Apartment Buildings":["VIEW PROPERTIES"],
+    "Local Market":["SHOP"],
+    "Shopping Center":["SHOP"],
+    "Restaurants":["EAT"],
+    "Bank":["VIEW FINANCES"],
+    "Corporate Offices":["SEARCH FOR JOBS"],
+    "Tech Company":["SEARCH FOR TECH JOBS"],
+    "Startup Hub":["EXPLORE OPPORTUNITIES"],
+    "Electronics Store":["SHOP"],
+    "Business Center":["SEARCH FOR CAREERS"],
+    "Law Office":["VIEW CAREERS"],
+    "Financial Office":["VIEW CAREERS"],
+    "Factory":["SEARCH FOR WORK"],
+    "Warehouse":["SEARCH FOR WORK"],
+    "Logistics Center":["SEARCH FOR WORK"],
+    "Cinema":["RELAX"],
+    "Arcade":["PLAY"],
+    "Gym":["TRAIN"],
+    "Nightlife":["SOCIALIZE"]
+  };
+
+  panel.innerHTML = `
+    <div class="location-panel">
+      <div>
+        <div class="eyebrow">${esc(district)}</div>
+        <h3>${esc(location)}</h3>
+        <p class="small">This location is part of the living city. More activities will unlock as City Life expands.</p>
+      </div>
+      <div class="location-actions">
+        ${(actions[location] || ["EXPLORE"]).map(action =>
+          `<button class="secondary" onclick="locationAction('${esc(action)}','${esc(location)}')">${esc(action)}</button>`
+        ).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function locationAction(action, location){
+  const panel = $("locationPanel");
+  if(!panel) return;
+
+  panel.innerHTML = `
+    <div class="success">
+      <strong>${esc(action)}</strong> selected at <strong>${esc(location)}</strong>.
+      <div class="small">This interaction point is now connected to the City Life world. Deeper mechanics will be attached to this location as the simulation grows.</div>
+    </div>
+  `;
+}
+
 async function showJobs(){
   const jobs = $("jobs");
 
