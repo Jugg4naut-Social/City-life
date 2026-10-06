@@ -845,10 +845,10 @@ function openCityLocation(location,district){
 
   p.innerHTML=`
     <div class="location-panel">
-      <div class="eyebrow">\${esc(district)}</div>
-      <h3>\${esc(location)}</h3>
-      <p class="small">You are standing at \${esc(location)}. This building is part of the living City Life world.</p>
-      <button class="primary" onclick="showCity('\${esc(district)}')">RETURN TO CITY</button>
+      <div class="eyebrow">${esc(district)}</div>
+      <h3>${esc(location)}</h3>
+      <p class="small">You are standing at ${esc(location)}. This building is part of the living City Life world.</p>
+      <button class="primary" onclick="showCity('${esc(district)}')">RETURN TO CITY</button>
     </div>
   `;
 }
@@ -945,6 +945,48 @@ async function workJob(){
   }
 }
 
+
+async 
+async function chooseJob(jobId){
+  try{
+    if(!playerId){
+      throw new Error("Create a character first.");
+    }
+
+    const response = await api("/api/job",{
+      method:"POST",
+      body:JSON.stringify({
+        player_id:playerId,
+        job_id:jobId
+      })
+    });
+
+    if(!response.success){
+      throw new Error(response.message || "Could not take this job.");
+    }
+
+    showJobs();
+    showWork();
+
+    const result=$("result");
+    if(result){
+      result.innerHTML=`
+        <div class="success">
+          <strong>Career started!</strong><br>
+          ${esc(response.message || "You successfully started this job.")}
+        </div>
+      `;
+    }
+
+    renderDashboard();
+
+  }catch(error){
+    const result=$("result");
+    if(result){
+      result.innerHTML=`<div class="error">${esc(error.message)}</div>`;
+    }
+  }
+}
 
 async function showJobs(){
   const jobs = $("jobs");
