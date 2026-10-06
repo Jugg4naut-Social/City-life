@@ -148,7 +148,7 @@ async function createPlayer(){
 
     result.innerHTML = `
       <div class="section-title">
-        <div class="section-icon">★</div>
+        <div class="section-icon"></div>
         <div>
           <div class="eyebrow">NEW CITIZEN</div>
           <h2>Your story begins</h2>
@@ -173,10 +173,10 @@ async function createPlayer(){
 function homeVisual(home){
   const name = String(home.name||"").toLowerCase();
 
-  if(name.includes("studio")) return "⌂";
-  if(name.includes("penthouse")) return "◆";
-  if(name.includes("modern")) return "▣";
-  return "🏠";
+  if(name.includes("studio")) return "";
+  if(name.includes("penthouse")) return "";
+  if(name.includes("modern")) return "";
+  return "";
 }
 
 async function showHomes(){
@@ -185,7 +185,7 @@ async function showHomes(){
   homes.innerHTML = `
     <section class="card">
       <div class="section-title">
-        <div class="section-icon">⌂</div>
+        <div class="section-icon"></div>
         <div><div class="eyebrow">PROPERTY</div><h2>Choose Your Home</h2></div>
       </div>
       <p class="small">Start modestly. Build your wealth. Upgrade when you're ready.</p>
@@ -198,7 +198,7 @@ async function showHomes(){
     homes.innerHTML = `
       <section class="card">
         <div class="section-title">
-          <div class="section-icon">⌂</div>
+          <div class="section-icon"></div>
           <div><div class="eyebrow">PROPERTY MARKET</div><h2>Choose Your Home</h2></div>
         </div>
         <p class="small">Your first month's rent is paid when you move in.</p>
@@ -237,7 +237,7 @@ async function chooseHome(homeId){
 
   homes.innerHTML = `
     <section class="card">
-      <div class="section-icon">⌂</div>
+      <div class="section-icon"></div>
       <h2>Moving in...</h2>
       <p class="small">Getting your new home ready.</p>
     </section>`;
@@ -259,7 +259,7 @@ async function chooseHome(homeId){
     homes.innerHTML = `
       <section class="card">
         <div class="section-title">
-          <div class="section-icon">⌂</div>
+          <div class="section-icon"></div>
           <div><div class="eyebrow">MOVE COMPLETE</div><h2>You're Home</h2></div>
         </div>
 
@@ -284,13 +284,13 @@ function jobVisual(category){
   const c = String(category||"").toLowerCase();
 
   if(c.includes("technology")) return "</>";
-  if(c.includes("creative")) return "✦";
+  if(c.includes("creative")) return "";
   if(c.includes("health")) return "+";
-  if(c.includes("security")) return "◆";
-  if(c.includes("transport")) return "→";
+  if(c.includes("security")) return "";
+  if(c.includes("transport")) return "";
   if(c.includes("business")) return "$";
-  if(c.includes("retail")) return "▣";
-  return "★";
+  if(c.includes("retail")) return "";
+  return "";
 }
 
 function skillForJob(job){
@@ -391,7 +391,7 @@ async function chooseJob(jobId){
     jobs.innerHTML = `
       <section class="card">
         <div class="section-title">
-          <div class="section-icon">★</div>
+          <div class="section-icon"></div>
           <div><div class="eyebrow">CAREER STARTED</div><h2>You're Hired</h2></div>
         </div>
 
@@ -420,7 +420,7 @@ async function showWork(){
   work.innerHTML = `
     <section class="card">
       <div class="section-title">
-        <div class="section-icon">★</div>
+        <div class="section-icon"></div>
         <div><div class="eyebrow">DAILY LIFE</div><h2>Go To Work</h2></div>
       </div>
 

@@ -28,16 +28,16 @@ function renderStats(){
 
   return '<div class="stats">' +
 
-    '<div class="stat">💰 $' + player.balance +
+    '<div class="stat"> $' + player.balance +
     '<div class="small">Cash</div></div>' +
 
-    '<div class="stat">❤️ ' + player.health +
+    '<div class="stat"> ' + player.health +
     '<div class="small">Health</div></div>' +
 
-    '<div class="stat">⚡ ' + player.energy +
+    '<div class="stat"> ' + player.energy +
     '<div class="small">Energy</div></div>' +
 
-    '<div class="stat">😊 ' + player.happiness +
+    '<div class="stat"> ' + player.happiness +
     '<div class="small">Happiness</div></div>' +
 
     '</div>';
@@ -73,12 +73,12 @@ async function createPlayer(){
     player=data.player;
 
     result.innerHTML =
-      "<h2>Welcome, "+player.name+"! 🎉</h2>" +
+      "<h2>Welcome, "+player.name+"! </h2>" +
       "<p>Your new life has begun.</p>" +
       renderStats() +
 
       "<div class='card' style='margin-top:16px'>" +
-      "<h3>🏠 Choose Your First Home</h3>" +
+      "<h3> Choose Your First Home</h3>" +
       "<p>Your character is ready. Now choose where your new life begins.</p>" +
       "<button class='start' onclick='showHomes()'>CHOOSE YOUR HOME</button>" +
       "</div>";
@@ -100,7 +100,7 @@ async function showHomes(){
   const homes=document.getElementById("homes");
 
   homes.innerHTML=
-    "<div class='card'><h2>🏠 Choose Your Home</h2>" +
+    "<div class='card'><h2> Choose Your Home</h2>" +
     "<p class='small'>Your first major decision. You only pay the first month's rent.</p>" +
     "<p>Loading available homes...</p></div>";
 
@@ -117,7 +117,7 @@ async function showHomes(){
 
     homes.innerHTML=
       "<div class='card'>" +
-      "<h2>🏠 Choose Your Home</h2>" +
+      "<h2> Choose Your Home</h2>" +
       "<p class='small'>Rent first. Buy property later.</p>" +
 
       data.homes.map(function(h){
@@ -128,10 +128,10 @@ async function showHomes(){
 
           "<h3>"+h.name+"</h3>" +
 
-          "<p>📍 "+h.district+"</p>" +
-          "<p>🏷️ Rent: $"+h.monthly_rent+"/month</p>" +
-          "<p>💰 Purchase later: $"+h.purchase_price+"</p>" +
-          "<p>✨ Comfort: "+h.comfort+"</p>" +
+          "<p> "+h.district+"</p>" +
+          "<p> Rent: $"+h.monthly_rent+"/month</p>" +
+          "<p> Purchase later: $"+h.purchase_price+"</p>" +
+          "<p> Comfort: "+h.comfort+"</p>" +
 
           (canAfford
 
@@ -161,7 +161,7 @@ async function chooseHome(homeId){
   const homes=document.getElementById("homes");
 
   homes.innerHTML=
-    "<div class='card'><p>🏠 Moving you into your new home...</p></div>";
+    "<div class='card'><p> Moving you into your new home...</p></div>";
 
   try{
 
@@ -188,10 +188,10 @@ async function chooseHome(homeId){
 
     homes.innerHTML=
       "<div class='card'>" +
-      "<h2>🏠 You're Home!</h2>" +
+      "<h2> You're Home!</h2>" +
       "<p>Welcome to <strong>"+data.home.name+"</strong>.</p>" +
-      "<p>📍 "+data.home.district+"</p>" +
-      "<p>💰 Remaining cash: $"+data.balance+"</p>" +
+      "<p> "+data.home.district+"</p>" +
+      "<p> Remaining cash: $"+data.balance+"</p>" +
       renderStats() +
       "</div>";
 
@@ -210,7 +210,7 @@ async function showJobs(){
   const jobs=document.getElementById("jobs");
 
   jobs.innerHTML=
-    "<div class='card'><h2>💼 Find a Job</h2>" +
+    "<div class='card'><h2> Find a Job</h2>" +
     "<p>Loading opportunities...</p></div>";
 
   try{
@@ -228,7 +228,7 @@ async function showJobs(){
 
     jobs.innerHTML=
       "<div class='card'>" +
-      "<h2>💼 Choose Your Career</h2>" +
+      "<h2> Choose Your Career</h2>" +
       "<p class='small'>Better careers will become available as your skills grow.</p>" +
 
       data.jobs.map(function(j){
@@ -240,10 +240,10 @@ async function showJobs(){
 
           "<h3>"+j.title+"</h3>" +
 
-          "<p>🏢 "+j.category+"</p>" +
-          "<p>💵 Earn: $"+j.salary+" / work</p>" +
-          "<p>⚡ Energy: "+j.energy_cost+"</p>" +
-          "<p>🎯 Skill required: "+j.skill_required+"</p>" +
+          "<p> "+j.category+"</p>" +
+          "<p> Earn: $"+j.salary+" / work</p>" +
+          "<p> Energy: "+j.energy_cost+"</p>" +
+          "<p> Skill required: "+j.skill_required+"</p>" +
 
           (skillUnlocked && enoughEnergy
 
@@ -277,7 +277,7 @@ async function chooseJob(jobId){
   const jobs=document.getElementById("jobs");
 
   jobs.innerHTML=
-    "<div class='card'><p>💼 Getting you hired...</p></div>";
+    "<div class='card'><p> Getting you hired...</p></div>";
 
   try{
 
@@ -302,10 +302,10 @@ async function chooseJob(jobId){
 
     jobs.innerHTML=
       "<div class='card'>" +
-      "<h2>🎉 You're Hired!</h2>" +
+      "<h2> You're Hired!</h2>" +
       "<p>You are now a <strong>"+data.job.title+"</strong>.</p>" +
-      "<p>💵 You earn $"+data.job.salary+" every time you work.</p>" +
-      "<p>⚡ Each shift costs "+data.job.energy_cost+" energy.</p>" +
+      "<p> You earn $"+data.job.salary+" every time you work.</p>" +
+      "<p> Each shift costs "+data.job.energy_cost+" energy.</p>" +
       "</div>";
 
     await showWork();
@@ -324,7 +324,7 @@ async function showWork(){
 
   work.innerHTML=
     "<div class='card'>" +
-    "<h2>🧑‍💼 Go To Work</h2>" +
+    "<h2> Go To Work</h2>" +
     renderStats() +
     "<button class='start' onclick='workJob()'>WORK NOW</button>" +
     "</div>";
@@ -336,7 +336,7 @@ async function workJob(){
   const work=document.getElementById("work");
 
   work.innerHTML=
-    "<div class='card'><p>🧑‍💼 Working...</p></div>";
+    "<div class='card'><p> Working...</p></div>";
 
   try{
 
@@ -365,7 +365,7 @@ async function workJob(){
     work.innerHTML=
       "<div class='card'>" +
 
-      "<h2>💰 Pay Day!</h2>" +
+      "<h2> Pay Day!</h2>" +
 
       "<div class='success'>" +
       "You completed your shift and earned <strong>$"+
@@ -376,16 +376,16 @@ async function workJob(){
 
       "<div class='card' style='margin-top:16px'>" +
 
-      "<h3>🛠️ Skill Progress</h3>" +
+      "<h3> Skill Progress</h3>" +
 
       "<p><strong>"+data.skill+"</strong></p>" +
 
-      "<p>⭐ XP: "+data.experience+" / 100</p>" +
+      "<p> XP: "+data.experience+" / 100</p>" +
 
-      "<p>📈 Level: "+data.level+"</p>" +
+      "<p> Level: "+data.level+"</p>" +
 
       (data.level_up
-        ? "<div class='success'>🎉 Level Up! Your "+data.skill+" skill increased.</div>"
+        ? "<div class='success'> Level Up! Your "+data.skill+" skill increased.</div>"
         : "") +
 
       "</div>" +
