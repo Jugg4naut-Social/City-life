@@ -353,8 +353,7 @@ export default {
       });
     }
 
-    return new Response(`
-<!DOCTYPE html>
+    return new Response(`<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -365,17 +364,28 @@ margin:0;
 font-family:Arial,sans-serif;
 background:#090d16;
 color:white;
-display:flex;
-justify-content:center;
-padding:30px 15px
+padding:25px 15px
 }
-main{width:100%;max-width:500px}
-h1{text-align:center;font-size:42px;margin-bottom:5px}
-.tag{text-align:center;color:#9da8bd;margin-bottom:30px}
+main{
+width:100%;
+max-width:600px;
+margin:auto
+}
+h1{
+text-align:center;
+font-size:42px;
+margin:10px 0 5px
+}
+.tag{
+text-align:center;
+color:#9da8bd;
+margin-bottom:25px
+}
 .card{
 background:#151c2b;
-padding:25px;
-border-radius:20px
+padding:22px;
+border-radius:20px;
+margin-bottom:15px
 }
 input,button{
 width:100%;
@@ -395,7 +405,14 @@ border:0;
 font-weight:bold;
 cursor:pointer
 }
-.start{background:white;color:#111}
+.start{
+background:white;
+color:#111
+}
+.secondary{
+background:#26334a;
+color:white
+}
 .stats{
 display:grid;
 grid-template-columns:1fr 1fr;
@@ -407,77 +424,211 @@ background:#202a3d;
 padding:15px;
 border-radius:10px
 }
-.small{color:#9da8bd;font-size:13px}
-#result{margin-top:20px}
+.small{
+color:#9da8bd;
+font-size:13px
+}
+.job{
+background:#202a3d;
+padding:17px;
+border-radius:14px;
+margin-top:12px
+}
+.job h3{
+margin:0 0 8px
+}
+.job p{
+margin:6px 0;
+color:#c8d0df
+}
+.locked{
+opacity:.5
+}
+.success{
+background:#16351f;
+padding:14px;
+border-radius:10px;
+margin-top:15px
+}
+.error{
+background:#3a1820;
+padding:14px;
+border-radius:10px;
+margin-top:15px
+}
 </style>
 </head>
+
 <body>
 <main>
+
 <h1>🏙️ CITY LIFE</h1>
 <div class="tag">Build a life. Build an empire.</div>
 
 <div class="card">
-<h2>Create Your Character</h2>
+
+<div id="result">
+<h2>Start Your Life</h2>
+<p class="small">
+Create your character and begin with $2,000.
+</p>
 
 <input id="name" placeholder="Character name">
-<input id="age" type="number" min="18" max="100" placeholder="Age">
 
 <button class="start" onclick="createPlayer()">
 START YOUR LIFE
 </button>
+</div>
 
-<div id="result"></div>
 <div id="homes"></div>
+<div id="jobs"></div>
+<div id="work"></div>
+
 </div>
 
 <script>
 
-async function showHomes(playerId){
-  const homes=document.getElementById("homes");
-  homes.innerHTML="<p>Finding available homes...</p>";
+let player = null;
+
+function renderStats(){
+  if(!player) return;
+
+  return '<div class="stats">' +
+
+    '<div class="stat">💰 $' + player.balance +
+    '<div class="small">Cash</div></div>' +
+
+    '<div class="stat">❤️ ' + player.health +
+    '<div class="small">Health</div></div>' +
+
+    '<div class="stat">⚡ ' + player.energy +
+    '<div class="small">Energy</div></div>' +
+
+    '<div class="stat">😊 ' + player.happiness +
+    '<div class="small">Happiness</div></div>' +
+
+    '</div>';
+}
+
+async function createPlayer(){
+
+  const name=document.getElementById("name").value.trim();
+  const result=document.getElementById("result");
+
+  if(!name){
+    result.innerHTML='<div class="error">Please enter a character name.</div>';
+    return;
+  }
+
+  result.innerHTML="<p>Creating your life...</p>";
 
   try{
+
+    const response=await fetch("/api/player",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name:name})
+    });
+
+    const data=await response.json();
+
+    if(!response.ok){
+      result.innerHTML='<div class="error">'+data.error+'</div>';
+      return;
+    }
+
+    player=data.player;
+
+    result.innerHTML =
+      "<h2>Welcome, "+player.name+"! 🎉</h2>" +
+      "<p>Your new life has begun.</p>" +
+      renderStats();
+
+    await showHomes();
+
+  }catch(error){
+
+    result.innerHTML=
+      '<div class="error">Unable to create player.</div>';
+
+  }
+}
+
+async function showHomes(){
+
+  const homes=document.getElementById("homes");
+
+  homes.innerHTML=
+    "<div class='card'><h2>🏠 Choose Your Home</h2>" +
+    "<p class='small'>Your first major decision. You only pay the first month's rent.</p>" +
+    "<p>Loading available homes...</p></div>";
+
+  try{
+
     const response=await fetch("/api/homes");
     const data=await response.json();
 
     if(!response.ok){
-      homes.innerHTML="<p>"+data.error+"</p>";
+      homes.innerHTML=
+        "<div class='error'>"+data.error+"</div>";
       return;
     }
 
-    if(!data.homes.length){
-      homes.innerHTML="<p>No homes are available right now.</p>";
-      return;
-    }
-
-    homes.innerHTML =
+    homes.innerHTML=
+      "<div class='card'>" +
       "<h2>🏠 Choose Your Home</h2>" +
-      "<p class='small'>This is your first major decision. Choose wisely.</p>" +
-      data.homes.map(h =>
-        "<div class='stat' style='margin-top:12px'>" +
-        "<h3>"+h.name+"</h3>" +
-        "<p>📍 "+h.district+"</p>" +
-        "<p>💰 Buy: $"+h.purchase_price+"</p>" +
-        "<p>🏷️ Rent: $"+h.monthly_rent+"/month</p>" +
-        "<p>✨ Comfort: "+h.comfort+"</p>" +
-        "<button class='start' onclick='chooseHome(""+playerId+"",""+h.id+"")'>RENT & MOVE IN</button>" +
-        "</div>"
-      ).join("");
+      "<p class='small'>Rent first. Buy property later.</p>" +
+
+      data.homes.map(function(h){
+
+        const canAfford=player.balance >= h.monthly_rent;
+
+        return "<div class='job'>" +
+
+          "<h3>"+h.name+"</h3>" +
+
+          "<p>📍 "+h.district+"</p>" +
+          "<p>🏷️ Rent: $"+h.monthly_rent+"/month</p>" +
+          "<p>💰 Purchase later: $"+h.purchase_price+"</p>" +
+          "<p>✨ Comfort: "+h.comfort+"</p>" +
+
+          (canAfford
+
+            ? "<button class='start' onclick='chooseHome(\""+
+              h.id+"\")'>RENT & MOVE IN</button>"
+
+            : "<button class='secondary' disabled>CAN'T AFFORD</button>"
+
+          ) +
+
+          "</div>";
+
+      }).join("") +
+
+      "</div>";
+
   }catch(error){
-    homes.innerHTML="<p>Unable to load homes.</p>";
+
+    homes.innerHTML=
+      "<div class='error'>Unable to load homes.</div>";
+
   }
 }
 
-async function chooseHome(playerId, homeId){
+async function chooseHome(homeId){
+
   const homes=document.getElementById("homes");
-  homes.innerHTML="<p>Moving you into your new home...</p>";
+
+  homes.innerHTML=
+    "<div class='card'><p>🏠 Moving you into your new home...</p></div>";
 
   try{
+
     const response=await fetch("/api/home",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
-        player_id:playerId,
+        player_id:player.id,
         home_id:homeId
       })
     });
@@ -485,85 +636,229 @@ async function chooseHome(playerId, homeId){
     const data=await response.json();
 
     if(!response.ok){
-      homes.innerHTML="<p>"+data.error+"</p>";
+
+      homes.innerHTML=
+        "<div class='error'>"+data.error+"</div>";
+
       return;
     }
 
-    homes.innerHTML =
+    player.balance=data.balance;
+
+    homes.innerHTML=
+      "<div class='card'>" +
       "<h2>🏠 You're Home!</h2>" +
       "<p>Welcome to <strong>"+data.home.name+"</strong>.</p>" +
       "<p>📍 "+data.home.district+"</p>" +
       "<p>💰 Remaining cash: $"+data.balance+"</p>" +
-      "<button class='start' onclick='alert("Jobs are coming next!")'>LOOK FOR A JOB</button>";
+      renderStats() +
+      "</div>";
+
+    await showJobs();
+
   }catch(error){
-    homes.innerHTML="<p>Unable to complete your move.</p>";
+
+    homes.innerHTML=
+      "<div class='error'>Unable to complete your move.</div>";
+
   }
 }
 
-async function createPlayer(){
-  const name=document.getElementById("name").value;
-  const age=document.getElementById("age").value;
-  const result=document.getElementById("result");
+async function showJobs(){
 
-  result.innerHTML="Creating your life...";
+  const jobs=document.getElementById("jobs");
+
+  jobs.innerHTML=
+    "<div class='card'><h2>💼 Find a Job</h2>" +
+    "<p>Loading opportunities...</p></div>";
 
   try{
-    const response=await fetch("/api/player",{
+
+    const response=await fetch("/api/jobs");
+    const data=await response.json();
+
+    if(!response.ok){
+
+      jobs.innerHTML=
+        "<div class='error'>"+data.error+"</div>";
+
+      return;
+    }
+
+    jobs.innerHTML=
+      "<div class='card'>" +
+      "<h2>💼 Choose Your Career</h2>" +
+      "<p class='small'>Better careers will become available as your skills grow.</p>" +
+
+      data.jobs.map(function(j){
+
+        const enoughEnergy=player.energy >= j.energy_cost;
+        const skillUnlocked=j.skill_required === 0;
+
+        return "<div class='job'>" +
+
+          "<h3>"+j.title+"</h3>" +
+
+          "<p>🏢 "+j.category+"</p>" +
+          "<p>💵 Earn: $"+j.salary+" / work</p>" +
+          "<p>⚡ Energy: "+j.energy_cost+"</p>" +
+          "<p>🎯 Skill required: "+j.skill_required+"</p>" +
+
+          (skillUnlocked && enoughEnergy
+
+            ? "<button class='start' onclick='chooseJob(\""+
+              j.id+"\")'>TAKE THIS JOB</button>"
+
+            : skillUnlocked
+
+              ? "<button class='secondary' disabled>TOO TIRED</button>"
+
+              : "<button class='secondary' disabled>LOCKED FOR NOW</button>"
+
+          ) +
+
+          "</div>";
+
+      }).join("") +
+
+      "</div>";
+
+  }catch(error){
+
+    jobs.innerHTML=
+      "<div class='error'>Unable to load jobs.</div>";
+
+  }
+}
+
+async function chooseJob(jobId){
+
+  const jobs=document.getElementById("jobs");
+
+  jobs.innerHTML=
+    "<div class='card'><p>💼 Getting you hired...</p></div>";
+
+  try{
+
+    const response=await fetch("/api/job",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({name})
+      body:JSON.stringify({
+        player_id:player.id,
+        job_id:jobId
+      })
     });
 
     const data=await response.json();
 
     if(!response.ok){
-      result.innerHTML="<p>"+data.error+"</p>";
+
+      jobs.innerHTML=
+        "<div class='error'>"+data.error+"</div>";
+
       return;
     }
 
-    const p=data.player;
+    jobs.innerHTML=
+      "<div class='card'>" +
+      "<h2>🎉 You're Hired!</h2>" +
+      "<p>You are now a <strong>"+data.job.title+"</strong>.</p>" +
+      "<p>💵 You earn $"+data.job.salary+" every time you work.</p>" +
+      "<p>⚡ Each shift costs "+data.job.energy_cost+" energy.</p>" +
+      "</div>";
 
+    await showWork();
 
-result.innerHTML =
-  "<h2>Welcome, " + p.name + "! 🎉</h2>" +
-  "<p>Your new life has begun.</p>" +
+  }catch(error){
 
-  '<div class="stats">' +
+    jobs.innerHTML=
+      "<div class='error'>Unable to get the job.</div>";
 
-  '<div class="stat">' +
-  "💰 $" + p.balance +
-  '<div class="small">Cash</div>' +
-  "</div>" +
-
-  '<div class="stat">' +
-  "❤️ " + p.health +
-  '<div class="small">Health</div>' +
-  "</div>" +
-
-  '<div class="stat">' +
-  "⚡ " + p.energy +
-  '<div class="small">Energy</div>' +
-  "</div>" +
-
-  '<div class="stat">' +
-  "😊 " + p.happiness +
-  '<div class="small">Happiness</div>' +
-  "</div>" +
-
-  "</div>";  
-}catch(error){
-    result.innerHTML="<p>Unable to create player.</p>";
   }
 }
+
+async function showWork(){
+
+  const work=document.getElementById("work");
+
+  work.innerHTML=
+    "<div class='card'>" +
+    "<h2>🧑‍💼 Go To Work</h2>" +
+    renderStats() +
+    "<button class='start' onclick='workJob()'>WORK NOW</button>" +
+    "</div>";
+
+}
+
+async function workJob(){
+
+  const work=document.getElementById("work");
+
+  work.innerHTML=
+    "<div class='card'><p>🧑‍💼 Working...</p></div>";
+
+  try{
+
+    const response=await fetch("/api/work",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        player_id:player.id
+      })
+    });
+
+    const data=await response.json();
+
+    if(!response.ok){
+
+      work.innerHTML=
+        "<div class='error'>"+data.error+"</div>" +
+        "<div class='card'>"+renderStats()+"</div>";
+
+      return;
+    }
+
+    player.balance=data.balance;
+    player.energy=data.energy;
+
+    work.innerHTML=
+      "<div class='card'>" +
+
+      "<h2>💰 Pay Day!</h2>" +
+
+      "<div class='success'>" +
+      "You completed your shift and earned <strong>$"+
+      data.earned+"</strong>!" +
+      "</div>" +
+
+      renderStats() +
+
+      (player.energy > 0
+
+        ? "<button class='start' onclick='workJob()'>WORK AGAIN</button>"
+
+        : "<p class='small'>You're exhausted. Rest will be added to the next stage.</p>"
+
+      ) +
+
+      "</div>";
+
+  }catch(error){
+
+    work.innerHTML=
+      "<div class='error'>Unable to complete work.</div>";
+
+  }
+}
+
 </script>
 
 </main>
 </body>
-</html>
-    `, {
-      headers: {
-        "Content-Type": "text/html;charset=UTF-8"
+</html>`,
+      {
+        headers: {
+          "content-type": "text/html;charset=UTF-8"
+        }
       }
-    });
-  }
-};
+    );
