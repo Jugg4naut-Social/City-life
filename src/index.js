@@ -23,7 +23,7 @@ export default {
           (id, username, display_name, balance, health, energy, happiness, reputation)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `)
-          .bind(id, name, age, 2000, 100, 100, 70, 0)
+          .bind(id, name, name, 2000, 100, 100, 70, 0)
           .run();
 
         return Response.json({
