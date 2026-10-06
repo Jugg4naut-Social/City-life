@@ -1,171 +1,249 @@
-
 let player = null;
+let currentJob = null;
+let currentSkill = null;
+
+const $ = id => document.getElementById(id);
 
 window.addEventListener("error", function(event){
-  const box = document.getElementById("runtimeStatus");
-  if (box) {
-    box.textContent = "JavaScript error: " + event.message;
-  }
+  const box = $("runtimeStatus");
+  if(box) box.textContent = "JavaScript error: " + event.message;
 });
 
-const runtimeBox = document.getElementById("runtimeStatus");
-if (runtimeBox) {
-  runtimeBox.textContent = "JavaScript loaded successfully.";
+function setRuntime(message, good=true){
+  const box = $("runtimeStatus");
+  if(!box) return;
+  box.textContent = message;
+  box.style.color = good ? "#bff3cc" : "#ffc0c9";
 }
 
 document.addEventListener("DOMContentLoaded", function(){
+  setRuntime("JavaScript loaded successfully.");
 
-  const startButton = document.getElementById("startLifeButton");
+  const button = $("startLifeButton");
+  const input = $("name");
 
-  if (startButton) {
-    startButton.addEventListener("click", createPlayer);
+  if(button) button.addEventListener("click", createPlayer);
+
+  if(input){
+    input.addEventListener("keydown", function(e){
+      if(e.key === "Enter") createPlayer();
+    });
   }
-
 });
 
+function esc(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function playerName(){
+  return player?.name || player?.display_name || player?.username || "Citizen";
+}
+
+function stat(label,value,max=100){
+  const n=Math.max(0,Number(value)||0);
+  const width=Math.min(100,(n/max)*100);
+
+  return `
+    <div class="stat">
+      <div class="stat-value">${esc(n)}</div>
+      <div class="stat-label">${esc(label)}</div>
+      <div class="progress"><i style="width:${width}%"></i></div>
+    </div>`;
+}
+
 function renderStats(){
+  if(!player) return "";
+
+  return `
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">$${Number(player.balance||0).toLocaleString()}</div>
+        <div class="stat-label">CASH</div>
+      </div>
+      ${stat("HEALTH",player.health)}
+      ${stat("ENERGY",player.energy)}
+      ${stat("HAPPINESS",player.happiness)}
+    </div>`;
+}
+
+function renderDashboard(){
   if(!player) return;
 
-  return '<div class="stats">' +
+  $("dashboard").innerHTML = `
+    <section class="card">
+      <div class="dashboard-head">
+        <div>
+          <div class="eyebrow">YOUR CITY LIFE</div>
+          <h2>Welcome, ${esc(playerName())}</h2>
+          <div class="cash">$${Number(player.balance||0).toLocaleString()}</div>
+        </div>
+        <div class="character-mini"></div>
+      </div>
+      ${renderStats()}
+    </section>`;
+}
 
-    '<div class="stat">💰 $' + player.balance +
-    '<div class="small">Cash</div></div>' +
+async function api(url,options={}){
+  const response = await fetch(url,options);
+  let data = {};
 
-    '<div class="stat">❤️ ' + player.health +
-    '<div class="small">Health</div></div>' +
+  try{
+    data = await response.json();
+  }catch(e){
+    data = {error:"The server returned an invalid response."};
+  }
 
-    '<div class="stat">⚡ ' + player.energy +
-    '<div class="small">Energy</div></div>' +
+  if(!response.ok){
+    throw new Error(data.error || "Something went wrong.");
+  }
 
-    '<div class="stat">😊 ' + player.happiness +
-    '<div class="small">Happiness</div></div>' +
-
-    '</div>';
+  return data;
 }
 
 async function createPlayer(){
-
-  const name=document.getElementById("name").value.trim();
-  const result=document.getElementById("result");
+  const input = $("name");
+  const result = $("result");
+  const name = input ? input.value.trim() : "";
 
   if(!name){
-    result.innerHTML='<div class="error">Please enter a character name.</div>';
+    result.innerHTML = `
+      <div class="error">
+        <strong>Choose a character name.</strong>
+        <div class="small">Your name becomes part of your City Life identity.</div>
+      </div>`;
     return;
   }
 
-  result.innerHTML="<p>Creating your life...</p>";
+  if(name.length < 2){
+    result.innerHTML = `<div class="error">Your character name needs at least 2 characters.</div>`;
+    return;
+  }
+
+  result.innerHTML = `
+    <div class="character-stage">
+      <div class="character">
+        <div class="hair"></div><div class="head"></div><div class="face"></div>
+        <div class="body"></div><div class="arm arm-left"></div><div class="arm arm-right"></div>
+        <div class="leg leg-left"></div><div class="leg leg-right"></div>
+      </div>
+      <div class="ground"></div>
+    </div>
+    <h2>Creating your life...</h2>
+    <p class="small">Finding your place in the city.</p>`;
 
   try{
-
-    const response=await fetch("/api/player",{
+    const data = await api("/api/player",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({name:name})
+      body:JSON.stringify({name})
     });
 
-    const data=await response.json();
+    player = data.player || data;
+    renderDashboard();
 
-    if(!response.ok){
-      result.innerHTML='<div class="error">'+data.error+'</div>';
-      return;
-    }
+    result.innerHTML = `
+      <div class="section-title">
+        <div class="section-icon">★</div>
+        <div>
+          <div class="eyebrow">NEW CITIZEN</div>
+          <h2>Your story begins</h2>
+        </div>
+      </div>
 
-    player=data.player;
+      <p>Welcome, <strong>${esc(playerName())}</strong>. You have <strong>$2,000</strong> to begin building your future.</p>
 
-    result.innerHTML =
-      "<h2>Welcome, "+player.name+"! 🎉</h2>" +
-      "<p>Your new life has begun.</p>" +
-      renderStats() +
+      <div class="success">
+        Character created successfully. Your first decision is where to live.
+      </div>
 
-      "<div class='card' style='margin-top:16px'>" +
-      "<h3>🏠 Choose Your First Home</h3>" +
-      "<p>Your character is ready. Now choose where your new life begins.</p>" +
-      "<button class='start' onclick='showHomes()'>CHOOSE YOUR HOME</button>" +
-      "</div>";
+      <button class="primary" onclick="showHomes()">CHOOSE YOUR HOME</button>`;
+
+    await showHomes();
 
   }catch(error){
-
-    result.innerHTML=
-      '<div class="error">Unable to create player: '+
-      error.message+
-      '</div>';
-
-    console.error("createPlayer error:", error);
-
+    result.innerHTML = `<div class="error">${esc(error.message)}</div>`;
   }
 }
 
+function homeVisual(home){
+  const name = String(home.name||"").toLowerCase();
+
+  if(name.includes("studio")) return "⌂";
+  if(name.includes("penthouse")) return "◆";
+  if(name.includes("modern")) return "▣";
+  return "🏠";
+}
+
 async function showHomes(){
+  const homes = $("homes");
 
-  const homes=document.getElementById("homes");
-
-  homes.innerHTML=
-    "<div class='card'><h2>🏠 Choose Your Home</h2>" +
-    "<p class='small'>Your first major decision. You only pay the first month's rent.</p>" +
-    "<p>Loading available homes...</p></div>";
+  homes.innerHTML = `
+    <section class="card">
+      <div class="section-title">
+        <div class="section-icon">⌂</div>
+        <div><div class="eyebrow">PROPERTY</div><h2>Choose Your Home</h2></div>
+      </div>
+      <p class="small">Start modestly. Build your wealth. Upgrade when you're ready.</p>
+      <p>Loading available properties...</p>
+    </section>`;
 
   try{
+    const data = await api("/api/homes");
 
-    const response=await fetch("/api/homes");
-    const data=await response.json();
+    homes.innerHTML = `
+      <section class="card">
+        <div class="section-title">
+          <div class="section-icon">⌂</div>
+          <div><div class="eyebrow">PROPERTY MARKET</div><h2>Choose Your Home</h2></div>
+        </div>
+        <p class="small">Your first month's rent is paid when you move in.</p>
+        <div class="grid">
+          ${data.homes.map(h => {
+            const affordable = Number(player.balance) >= Number(h.monthly_rent);
 
-    if(!response.ok){
-      homes.innerHTML=
-        "<div class='error'>"+data.error+"</div>";
-      return;
-    }
-
-    homes.innerHTML=
-      "<div class='card'>" +
-      "<h2>🏠 Choose Your Home</h2>" +
-      "<p class='small'>Rent first. Buy property later.</p>" +
-
-      data.homes.map(function(h){
-
-        const canAfford=player.balance >= h.monthly_rent;
-
-        return "<div class='job'>" +
-
-          "<h3>"+h.name+"</h3>" +
-
-          "<p>📍 "+h.district+"</p>" +
-          "<p>🏷️ Rent: $"+h.monthly_rent+"/month</p>" +
-          "<p>💰 Purchase later: $"+h.purchase_price+"</p>" +
-          "<p>✨ Comfort: "+h.comfort+"</p>" +
-
-          (canAfford
-
-            ? "<button class='start' onclick='chooseHome(\""+
-              h.id+"\")'>RENT & MOVE IN</button>"
-
-            : "<button class='secondary' disabled>CAN'T AFFORD</button>"
-
-          ) +
-
-          "</div>";
-
-      }).join("") +
-
-      "</div>";
+            return `
+              <div class="option">
+                <div class="option-visual">${homeVisual(h)}</div>
+                <div class="option-title">${esc(h.name)}</div>
+                <div class="option-meta">
+                  <span class="pill">${esc(h.district)}</span>
+                  <br>
+                  Rent: <strong>$${Number(h.monthly_rent).toLocaleString()}</strong>/month<br>
+                  Buy later: $${Number(h.purchase_price).toLocaleString()}<br>
+                  Comfort: ${Number(h.comfort)}/100
+                </div>
+                ${
+                  affordable
+                  ? `<button class="primary" onclick="chooseHome('${esc(h.id)}')">MOVE IN</button>`
+                  : `<button class="secondary" disabled>NOT AFFORDABLE</button>`
+                }
+              </div>`;
+          }).join("")}
+        </div>
+      </section>`;
 
   }catch(error){
-
-    homes.innerHTML=
-      "<div class='error'>Unable to load homes.</div>";
-
+    homes.innerHTML = `<div class="error">${esc(error.message)}</div>`;
   }
 }
 
 async function chooseHome(homeId){
+  const homes = $("homes");
 
-  const homes=document.getElementById("homes");
-
-  homes.innerHTML=
-    "<div class='card'><p>🏠 Moving you into your new home...</p></div>";
+  homes.innerHTML = `
+    <section class="card">
+      <div class="section-icon">⌂</div>
+      <h2>Moving in...</h2>
+      <p class="small">Getting your new home ready.</p>
+    </section>`;
 
   try{
-
-    const response=await fetch("/api/home",{
+    const data = await api("/api/home",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
@@ -174,114 +252,131 @@ async function chooseHome(homeId){
       })
     });
 
-    const data=await response.json();
+    player.balance = data.balance;
 
-    if(!response.ok){
+    renderDashboard();
 
-      homes.innerHTML=
-        "<div class='error'>"+data.error+"</div>";
+    homes.innerHTML = `
+      <section class="card">
+        <div class="section-title">
+          <div class="section-icon">⌂</div>
+          <div><div class="eyebrow">MOVE COMPLETE</div><h2>You're Home</h2></div>
+        </div>
 
-      return;
-    }
+        <div class="success">
+          Welcome to <strong>${esc(data.home.name)}</strong>.
+        </div>
 
-    player.balance=data.balance;
+        <p class="small">District: ${esc(data.home.district)}</p>
+        <p>Remaining cash: <strong>$${Number(data.balance).toLocaleString()}</strong></p>
 
-    homes.innerHTML=
-      "<div class='card'>" +
-      "<h2>🏠 You're Home!</h2>" +
-      "<p>Welcome to <strong>"+data.home.name+"</strong>.</p>" +
-      "<p>📍 "+data.home.district+"</p>" +
-      "<p>💰 Remaining cash: $"+data.balance+"</p>" +
-      renderStats() +
-      "</div>";
+        <button class="primary" onclick="showJobs()">FIND A JOB</button>
+      </section>`;
 
     await showJobs();
 
   }catch(error){
-
-    homes.innerHTML=
-      "<div class='error'>Unable to complete your move.</div>";
-
+    homes.innerHTML = `<div class="error">${esc(error.message)}</div>`;
   }
 }
 
+function jobVisual(category){
+  const c = String(category||"").toLowerCase();
+
+  if(c.includes("technology")) return "</>";
+  if(c.includes("creative")) return "✦";
+  if(c.includes("health")) return "+";
+  if(c.includes("security")) return "◆";
+  if(c.includes("transport")) return "→";
+  if(c.includes("business")) return "$";
+  if(c.includes("retail")) return "▣";
+  return "★";
+}
+
+function skillForJob(job){
+  const map = {
+    Service:"Practical",
+    Retail:"Communication",
+    Security:"Practical",
+    Transport:"Practical",
+    Business:"Business",
+    Creative:"Creativity",
+    Technology:"Technology",
+    Legal:"Knowledge",
+    Healthcare:"Knowledge"
+  };
+
+  return map[job.category] || "Practical";
+}
+
 async function showJobs(){
+  const jobs = $("jobs");
 
-  const jobs=document.getElementById("jobs");
-
-  jobs.innerHTML=
-    "<div class='card'><h2>💼 Find a Job</h2>" +
-    "<p>Loading opportunities...</p></div>";
+  jobs.innerHTML = `
+    <section class="card">
+      <div class="section-title">
+        <div class="section-icon">$</div>
+        <div><div class="eyebrow">CAREER MARKET</div><h2>Find Your Career</h2></div>
+      </div>
+      <p>Loading opportunities...</p>
+    </section>`;
 
   try{
+    const data = await api("/api/jobs");
 
-    const response=await fetch("/api/jobs");
-    const data=await response.json();
+    jobs.innerHTML = `
+      <section class="card">
+        <div class="section-title">
+          <div class="section-icon">$</div>
+          <div><div class="eyebrow">CAREER MARKET</div><h2>Choose Your Career</h2></div>
+        </div>
+        <p class="small">Work, gain experience and unlock higher-paying careers.</p>
 
-    if(!response.ok){
+        <div class="grid">
+          ${data.jobs.map(j => {
+            const enoughEnergy = Number(player.energy) >= Number(j.energy_cost);
+            const unlocked = Number(j.skill_required) === 0;
 
-      jobs.innerHTML=
-        "<div class='error'>"+data.error+"</div>";
+            return `
+              <div class="option ${unlocked ? "" : "locked"}">
+                <div class="option-visual">${jobVisual(j.category)}</div>
+                <div class="option-title">${esc(j.title)}</div>
+                <div class="option-meta">
+                  <span class="pill">${esc(j.category)}</span>
+                  <br>
+                  Pay: <strong>$${Number(j.salary).toLocaleString()}</strong>/shift<br>
+                  Energy: ${Number(j.energy_cost)}<br>
+                  Required skill: ${Number(j.skill_required)}
+                </div>
 
-      return;
-    }
-
-    jobs.innerHTML=
-      "<div class='card'>" +
-      "<h2>💼 Choose Your Career</h2>" +
-      "<p class='small'>Better careers will become available as your skills grow.</p>" +
-
-      data.jobs.map(function(j){
-
-        const enoughEnergy=player.energy >= j.energy_cost;
-        const skillUnlocked=j.skill_required === 0;
-
-        return "<div class='job'>" +
-
-          "<h3>"+j.title+"</h3>" +
-
-          "<p>🏢 "+j.category+"</p>" +
-          "<p>💵 Earn: $"+j.salary+" / work</p>" +
-          "<p>⚡ Energy: "+j.energy_cost+"</p>" +
-          "<p>🎯 Skill required: "+j.skill_required+"</p>" +
-
-          (skillUnlocked && enoughEnergy
-
-            ? "<button class='start' onclick='chooseJob(\""+
-              j.id+"\")'>TAKE THIS JOB</button>"
-
-            : skillUnlocked
-
-              ? "<button class='secondary' disabled>TOO TIRED</button>"
-
-              : "<button class='secondary' disabled>LOCKED FOR NOW</button>"
-
-          ) +
-
-          "</div>";
-
-      }).join("") +
-
-      "</div>";
+                ${
+                  unlocked && enoughEnergy
+                  ? `<button class="primary" onclick="chooseJob('${esc(j.id)}')">TAKE THIS JOB</button>`
+                  : unlocked
+                  ? `<button class="secondary" disabled>TOO TIRED</button>`
+                  : `<button class="secondary" disabled>LOCKED</button>`
+                }
+              </div>`;
+          }).join("")}
+        </div>
+      </section>`;
 
   }catch(error){
-
-    jobs.innerHTML=
-      "<div class='error'>Unable to load jobs.</div>";
-
+    jobs.innerHTML = `<div class="error">${esc(error.message)}</div>`;
   }
 }
 
 async function chooseJob(jobId){
+  const jobs = $("jobs");
 
-  const jobs=document.getElementById("jobs");
-
-  jobs.innerHTML=
-    "<div class='card'><p>💼 Getting you hired...</p></div>";
+  jobs.innerHTML = `
+    <section class="card">
+      <h2>Getting you hired...</h2>
+      <p class="small">Preparing your first shift.</p>
+    </section>`;
 
   try{
-
-    const response=await fetch("/api/job",{
+    const data = await api("/api/job",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
@@ -290,121 +385,121 @@ async function chooseJob(jobId){
       })
     });
 
-    const data=await response.json();
+    currentJob = data.job;
+    currentSkill = data.skill || skillForJob(data.job);
 
-    if(!response.ok){
+    jobs.innerHTML = `
+      <section class="card">
+        <div class="section-title">
+          <div class="section-icon">★</div>
+          <div><div class="eyebrow">CAREER STARTED</div><h2>You're Hired</h2></div>
+        </div>
 
-      jobs.innerHTML=
-        "<div class='error'>"+data.error+"</div>";
+        <div class="success">
+          You are now a <strong>${esc(data.job.title)}</strong>.
+        </div>
 
-      return;
-    }
+        <p>Every shift earns <strong>$${Number(data.job.salary).toLocaleString()}</strong>.</p>
+        <p class="small">Skill: ${esc(currentSkill)} &bull; Energy per shift: ${Number(data.job.energy_cost)}</p>
 
-    jobs.innerHTML=
-      "<div class='card'>" +
-      "<h2>🎉 You're Hired!</h2>" +
-      "<p>You are now a <strong>"+data.job.title+"</strong>.</p>" +
-      "<p>💵 You earn $"+data.job.salary+" every time you work.</p>" +
-      "<p>⚡ Each shift costs "+data.job.energy_cost+" energy.</p>" +
-      "</div>";
+        <button class="primary" onclick="showWork()">GO TO WORK</button>
+      </section>`;
 
     await showWork();
 
   }catch(error){
-
-    jobs.innerHTML=
-      "<div class='error'>Unable to get the job.</div>";
-
+    jobs.innerHTML = `<div class="error">${esc(error.message)}</div>`;
   }
 }
 
 async function showWork(){
+  const work = $("work");
 
-  const work=document.getElementById("work");
+  renderDashboard();
 
-  work.innerHTML=
-    "<div class='card'>" +
-    "<h2>🧑‍💼 Go To Work</h2>" +
-    renderStats() +
-    "<button class='start' onclick='workJob()'>WORK NOW</button>" +
-    "</div>";
+  work.innerHTML = `
+    <section class="card">
+      <div class="section-title">
+        <div class="section-icon">★</div>
+        <div><div class="eyebrow">DAILY LIFE</div><h2>Go To Work</h2></div>
+      </div>
 
+      <p>Put in the work, earn money and develop your ${esc(currentSkill || "skills")} skill.</p>
+
+      ${renderStats()}
+
+      <button class="primary" onclick="workJob()">WORK THIS SHIFT</button>
+    </section>`;
 }
 
 async function workJob(){
+  const work = $("work");
 
-  const work=document.getElementById("work");
-
-  work.innerHTML=
-    "<div class='card'><p>🧑‍💼 Working...</p></div>";
+  work.innerHTML = `
+    <section class="card">
+      <div class="character-stage" style="margin:-20px -20px 18px">
+        <div class="character">
+          <div class="hair"></div><div class="head"></div><div class="face"></div>
+          <div class="body"></div><div class="arm arm-left"></div><div class="arm arm-right"></div>
+          <div class="leg leg-left"></div><div class="leg leg-right"></div>
+        </div>
+        <div class="ground"></div>
+      </div>
+      <h2>Working...</h2>
+      <p class="small">Your shift is underway.</p>
+    </section>`;
 
   try{
-
-    const response=await fetch("/api/work",{
+    const data = await api("/api/work",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        player_id:player.id
-      })
+      body:JSON.stringify({player_id:player.id})
     });
 
-    const data=await response.json();
+    player.balance = data.balance;
+    player.energy = data.energy;
 
-    if(!response.ok){
+    renderDashboard();
 
-      work.innerHTML=
-        "<div class='error'>"+data.error+"</div>" +
-        "<div class='card'>"+renderStats()+"</div>";
+    work.innerHTML = `
+      <section class="card">
+        <div class="section-title">
+          <div class="section-icon">$</div>
+          <div><div class="eyebrow">SHIFT COMPLETE</div><h2>Pay Day</h2></div>
+        </div>
 
-      return;
-    }
+        <div class="success">
+          You earned <strong>$${Number(data.earned).toLocaleString()}</strong>.
+        </div>
 
-    player.balance=data.balance;
-    player.energy=data.energy;
+        ${renderStats()}
 
-    work.innerHTML=
-      "<div class='card'>" +
+        <div class="option">
+          <div class="eyebrow">SKILL PROGRESS</div>
+          <h3>${esc(data.skill)}</h3>
+          <p>Experience: <strong>${Number(data.experience)}</strong> / 100</p>
+          <div class="progress">
+            <i style="width:${Math.min(100,Number(data.experience||0))}%"></i>
+          </div>
+          <p class="small">Level ${Number(data.level||0)} &bull; +${Number(data.xp_gained||0)} XP</p>
 
-      "<h2>💰 Pay Day!</h2>" +
+          ${
+            data.level_up
+            ? `<div class="level-up"><strong>LEVEL UP!</strong><br>Your ${esc(data.skill)} skill increased.</div>`
+            : ""
+          }
+        </div>
 
-      "<div class='success'>" +
-      "You completed your shift and earned <strong>$"+
-      data.earned+"</strong>!" +
-      "</div>" +
-
-      renderStats() +
-
-      "<div class='card' style='margin-top:16px'>" +
-
-      "<h3>🛠️ Skill Progress</h3>" +
-
-      "<p><strong>"+data.skill+"</strong></p>" +
-
-      "<p>⭐ XP: "+data.experience+" / 100</p>" +
-
-      "<p>📈 Level: "+data.level+"</p>" +
-
-      (data.level_up
-        ? "<div class='success'>🎉 Level Up! Your "+data.skill+" skill increased.</div>"
-        : "") +
-
-      "</div>" +
-
-      (player.energy > 0
-
-        ? "<button class='start' onclick='workJob()'>WORK AGAIN</button>"
-
-        : "<p class='small'>You're exhausted. Rest will be added to the next stage.</p>"
-
-      ) +
-
-      "</div>";
-
+        ${
+          Number(player.energy) > 0
+          ? `<button class="primary" onclick="workJob()">WORK AGAIN</button>`
+          : `<div class="error">You're exhausted. Rest mechanics will be added to the next life-system upgrade.</div>`
+        }
+      </section>`;
+      
   }catch(error){
-
-    work.innerHTML=
-      "<div class='error'>Unable to complete work.</div>";
-
+    work.innerHTML = `
+      <div class="error">${esc(error.message)}</div>
+      <section class="card">${renderStats()}</section>`;
   }
 }
-
