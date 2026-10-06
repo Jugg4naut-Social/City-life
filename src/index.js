@@ -150,7 +150,7 @@ export default {
           success: true,
           message: "Welcome to your new rented home!",
           home: home,
-          balance: player.balance - home.purchase_price
+          balance: player.balance - home.monthly_rent
         });
       } catch (error) {
         return Response.json(
