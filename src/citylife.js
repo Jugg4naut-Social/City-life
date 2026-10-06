@@ -377,16 +377,46 @@ function showCity(district="Residential"){
 }
 
 function loadThreeCity(district){
-  if(window.THREE){
-    buildThreeCity(district);
-    return;
-  }
+  const status=$("cityLocationPanel");
 
-  const s=document.createElement("script");
-  s.src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js";
-  s.onload=()=>buildThreeCity(district);
-  s.onerror=()=>showCityFallback(district);
-  document.head.appendChild(s);
+  try{
+    if(window.THREE){
+      if(status) status.innerHTML='<div class="small">3D engine ready.</div>';
+      buildThreeCity(district);
+      return;
+    }
+
+    if(status) status.innerHTML='<div class="small">Loading 3D city engine...</div>';
+
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js";
+
+    s.onload=()=>{
+      if(window.THREE){
+        if(status) status.innerHTML='<div class="small">3D engine loaded.</div>';
+        try{
+          buildThreeCity(district);
+        }catch(error){
+          if(status) status.innerHTML='<div class="city-load-error">3D build error: '+esc(error.message)+'</div>';
+          showCityFallback(district);
+        }
+      }else{
+        if(status) status.innerHTML='<div class="city-load-error">Three.js loaded but the 3D engine is unavailable.</div>';
+        showCityFallback(district);
+      }
+    };
+
+    s.onerror=()=>{
+      if(status) status.innerHTML='<div class="city-load-error">Could not load the 3D engine from the external library.</div>';
+      showCityFallback(district);
+    };
+
+    document.head.appendChild(s);
+
+  }catch(error){
+    if(status) status.innerHTML='<div class="city-load-error">3D startup error: '+esc(error.message)+'</div>';
+    showCityFallback(district);
+  }
 }
 
 function showCityFallback(district){
